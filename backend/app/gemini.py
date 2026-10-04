@@ -15,21 +15,33 @@ class GeminiError(RuntimeError):
     pass
 
 
-def _post(path: str, payload: dict, attempts: int = 4) -> dict:
+def _post(path: str, payload: dict, attempts: int = 3, timeout: float = 30.0) -> dict:
+    """POST to Gemini, retrying temporary failures: 429/5xx responses AND timeouts or dropped
+    connections. A short per-attempt timeout matters: Gemini occasionally stalls for a minute or
+    more on a single call, and retrying a stalled call is much faster than waiting it out.
+    Always raises GeminiError (never a raw httpx error) so callers can return a clean 502."""
     if not settings.gemini_api_key:
         raise GeminiError("GEMINI_API_KEY is not set (see .env.example)")
     headers = {"x-goog-api-key": settings.gemini_api_key, "content-type": "application/json"}
     delay = 2.0
     last = ""
     for attempt in range(attempts):
-        resp = httpx.post(f"{BASE}/{path}", headers=headers, json=payload, timeout=60)
-        if resp.status_code == 200:
-            return resp.json()
-        last = f"{resp.status_code}: {resp.text[:300]}"
-        if resp.status_code not in _RETRYABLE or attempt == attempts - 1:
-            break
-        time.sleep(delay)
-        delay *= 2
+        try:
+            resp = httpx.post(
+                f"{BASE}/{path}", headers=headers, json=payload,
+                timeout=httpx.Timeout(timeout, connect=10.0),
+            )
+        except httpx.HTTPError as exc:  # timeouts, DNS failures, connection resets
+            last = type(exc).__name__
+        else:
+            if resp.status_code == 200:
+                return resp.json()
+            last = f"{resp.status_code}: {resp.text[:300]}"
+            if resp.status_code not in _RETRYABLE:
+                break  # a 400/403/404 will not get better by retrying
+        if attempt < attempts - 1:
+            time.sleep(delay)
+            delay *= 2
     raise GeminiError(f"Gemini request failed ({last})")
 
 
@@ -70,7 +82,7 @@ def generate_json(system: str, prompt: str, schema: dict) -> dict:
             "responseSchema": schema,
         },
     }
-    data = _post(f"models/{settings.gen_model}:generateContent", payload)
+    data = _post(f"models/{settings.gen_model}:generateContent", payload, timeout=45.0)
     try:
         text = data["candidates"][0]["content"]["parts"][0]["text"]
         return json.loads(text)

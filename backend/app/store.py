@@ -1,27 +1,56 @@
-"""Postgres + pgvector storage and similarity search."""
+"""Postgres + pgvector storage and similarity search.
+
+Two tables: documents (one row per uploaded or ingested file) and chunks (the searchable pieces,
+each with its embedding). Deleting a document deletes its chunks (ON DELETE CASCADE), so there is
+no way to leave orphaned searchable text behind.
+"""
 from dataclasses import dataclass
+from datetime import datetime
 
 import numpy as np
 import psycopg
 from pgvector.psycopg import register_vector
 
-from .config import settings
 from .chunking import Chunk
+from .config import settings
 
 
 def _connect(autocommit: bool = False) -> psycopg.Connection:
-    conn = psycopg.connect(settings.database_url, autocommit=autocommit)
-    return conn
+    return psycopg.connect(settings.database_url, autocommit=autocommit)
 
 
 def init_schema() -> None:
     # The extension must exist before register_vector can look up the type.
     with _connect(autocommit=True) as conn:
         conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
+        # One-off migration: the first version had a chunks table with no document link. Its
+        # contents are fully rebuildable from kb/, so drop it rather than migrate row by row.
+        has_chunks = conn.execute("SELECT to_regclass('public.chunks') IS NOT NULL").fetchone()[0]
+        if has_chunks:
+            linked = conn.execute(
+                "SELECT 1 FROM information_schema.columns "
+                "WHERE table_name = 'chunks' AND column_name = 'document_id'"
+            ).fetchone()
+            if not linked:
+                conn.execute("DROP TABLE chunks")
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS documents (
+                id serial PRIMARY KEY,
+                slug text UNIQUE NOT NULL,
+                title text NOT NULL,
+                filename text NOT NULL,
+                content_type text NOT NULL,
+                n_chunks integer NOT NULL,
+                created_at timestamptz NOT NULL DEFAULT now()
+            )
+            """
+        )
         conn.execute(
             f"""
             CREATE TABLE IF NOT EXISTS chunks (
                 id text PRIMARY KEY,
+                document_id integer NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
                 doc_slug text NOT NULL,
                 doc_title text NOT NULL,
                 heading text NOT NULL,
@@ -30,22 +59,90 @@ def init_schema() -> None:
             )
             """
         )
+        # SECURITY. On Supabase every table in the public schema is automatically exposed through
+        # a REST API that anyone holding the (public) anon key can call. Without the lines below,
+        # a stranger could read, edit or delete these tables directly and bypass the admin login.
+        #   1. Row Level Security with NO policies = deny everything for API users. Our backend
+        #      connects as the table owner (postgres), which is not subject to it.
+        #   2. Also revoke the API roles' table privileges, as a second independent layer.
+        # Harmless on a plain local Postgres, which has neither role.
+        conn.execute("ALTER TABLE documents ENABLE ROW LEVEL SECURITY")
+        conn.execute("ALTER TABLE chunks ENABLE ROW LEVEL SECURITY")
+        conn.execute(
+            """
+            DO $$
+            DECLARE r text;
+            BEGIN
+                FOREACH r IN ARRAY ARRAY['anon', 'authenticated'] LOOP
+                    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = r) THEN
+                        EXECUTE format('REVOKE ALL ON TABLE documents, chunks FROM %I', r);
+                    END IF;
+                END LOOP;
+            END $$
+            """
+        )
 
 
-def replace_all(chunks: list[Chunk], embeddings: np.ndarray) -> None:
-    """Idempotent re-ingest: the knowledge base is small, so we rebuild it from scratch."""
+@dataclass
+class DocRecord:
+    id: int
+    slug: str
+    title: str
+    filename: str
+    content_type: str
+    n_chunks: int
+    created_at: datetime
+    replaced: bool = False
+
+
+def add_document(
+    slug: str,
+    title: str,
+    filename: str,
+    content_type: str,
+    chunks: list[Chunk],
+    embeddings: np.ndarray,
+) -> DocRecord:
+    """Insert a document and its chunks in ONE transaction. If a document with the same slug
+    exists it is replaced, so re-uploading a file updates it instead of duplicating it."""
     with _connect() as conn:
         register_vector(conn)
-        conn.execute("TRUNCATE chunks")
+        replaced = conn.execute("DELETE FROM documents WHERE slug = %s", (slug,)).rowcount > 0
+        doc_id, created_at = conn.execute(
+            "INSERT INTO documents (slug, title, filename, content_type, n_chunks) "
+            "VALUES (%s, %s, %s, %s, %s) RETURNING id, created_at",
+            (slug, title, filename, content_type, len(chunks)),
+        ).fetchone()
         with conn.cursor() as cur:
             cur.executemany(
-                "INSERT INTO chunks (id, doc_slug, doc_title, heading, content, embedding) "
-                "VALUES (%s, %s, %s, %s, %s, %s)",
+                "INSERT INTO chunks (id, document_id, doc_slug, doc_title, heading, content, embedding) "
+                "VALUES (%s, %s, %s, %s, %s, %s, %s)",
                 [
-                    (c.id, c.doc_slug, c.doc_title, c.heading, c.content, e)
+                    (c.id, doc_id, c.doc_slug, c.doc_title, c.heading, c.content, e)
                     for c, e in zip(chunks, embeddings)
                 ],
             )
+    return DocRecord(doc_id, slug, title, filename, content_type, len(chunks), created_at, replaced)
+
+
+def list_documents() -> list[DocRecord]:
+    with _connect() as conn:
+        rows = conn.execute(
+            "SELECT id, slug, title, filename, content_type, n_chunks, created_at "
+            "FROM documents ORDER BY created_at DESC, id DESC"
+        ).fetchall()
+    return [DocRecord(*r) for r in rows]
+
+
+def delete_document(doc_id: int) -> bool:
+    with _connect() as conn:
+        return conn.execute("DELETE FROM documents WHERE id = %s", (doc_id,)).rowcount > 0
+
+
+def delete_all_documents() -> int:
+    """Remove every document (and, by cascade, every chunk). Used to rebuild from kb/."""
+    with _connect() as conn:
+        return conn.execute("DELETE FROM documents").rowcount
 
 
 @dataclass
@@ -59,7 +156,7 @@ class Hit:
 
 
 def search(query_embedding: np.ndarray, k: int) -> list[Hit]:
-    # No ANN index on purpose: with ~60 chunks an exact scan is instant and has perfect recall.
+    # No ANN index on purpose: at this size an exact scan is instant and has perfect recall.
     # Add an HNSW index (vector_cosine_ops) once the corpus is large enough for it to matter.
     with _connect() as conn:
         register_vector(conn)

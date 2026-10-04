@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useRef, useState } from "react";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -59,7 +60,7 @@ export default function Home() {
   return (
     <main className="shell">
       <header className="header">
-        <div className="brand">AI Customer Support <span>Assistant</span></div>
+        <div className="brand">Answer<span>Trail</span></div>
         <p className="tagline">
           Answers come only from the help articles, with sources. If the articles don&apos;t cover it,
           it says so instead of guessing.
@@ -104,6 +105,9 @@ export default function Home() {
           {loading ? "…" : "Ask"}
         </button>
       </form>
+      <p className="footer-link">
+        <Link href="/admin">Admin</Link>
+      </p>
     </main>
   );
 }

@@ -116,7 +116,26 @@ def fmt(label: str, s: dict) -> str:
     )
 
 
+def check_knowledge_base_is_pristine() -> None:
+    """The questions were written against kb/ only. Extra uploaded documents (or missing ones)
+    would quietly change what is retrievable and make the numbers meaningless, so refuse to run."""
+    from app import store
+
+    expected = {p.stem for p in settings.kb_dir.glob("*.md")}
+    present = {d.slug for d in store.list_documents()}
+    extra, missing = sorted(present - expected), sorted(expected - present)
+    if extra or missing:
+        print("The database does not match kb/, so these results would not be valid.")
+        if extra:
+            print("  extra documents:", ", ".join(extra))
+        if missing:
+            print("  missing documents:", ", ".join(missing))
+        print("Fix: run  python -m app.ingest --reset  and then re-run the evaluation.")
+        raise SystemExit(1)
+
+
 def main() -> None:
+    check_knowledge_base_is_pristine()
     questions = load_questions()
     print(f"Running {len(questions)} questions against {settings.gen_model} ...")
     rows = run_all(questions)

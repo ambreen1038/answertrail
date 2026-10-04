@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AI Customer Support Assistant",
+  title: "AnswerTrail: AI customer support assistant",
   description:
-    "A support assistant that answers only from a help center, cites the exact sources, and says so when it doesn't know.",
+    "Support answers you can trace to the source. Answers only from a help center, cites the exact passages, and says so when it doesn't know.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

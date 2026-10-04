@@ -1,19 +1,31 @@
-"""Build the vector index from kb/*.md.  Run:  python -m app.ingest"""
+"""Load the demo knowledge base from kb/*.md.
+
+    python -m app.ingest            add or update every article in kb/ (other documents untouched)
+    python -m app.ingest --reset    delete ALL documents first, then load kb/ (a clean, known state;
+                                    use this before running the evaluation)
+"""
+import sys
+
 from . import store
-from .chunking import load_kb
 from .config import settings
-from .gemini import embed_texts
+from .documents import ingest_file
 
 
 def main() -> None:
-    chunks = load_kb(settings.kb_dir)
-    if not chunks:
+    reset = "--reset" in sys.argv[1:]
+    files = sorted(settings.kb_dir.glob("*.md"))
+    if not files:
         raise SystemExit(f"No markdown files found in {settings.kb_dir}")
-    print(f"Chunked {len(set(c.doc_slug for c in chunks))} articles into {len(chunks)} chunks")
-    embeddings = embed_texts([c.embed_text for c in chunks], "RETRIEVAL_DOCUMENT")
+
     store.init_schema()
-    store.replace_all(chunks, embeddings)
-    print(f"Stored {store.count_chunks()} chunks ({settings.embed_dim}-dim, model {settings.embed_model})")
+    if reset:
+        print(f"--reset: removed {store.delete_all_documents()} existing document(s)")
+
+    for path in files:
+        doc = ingest_file(path.name, path.read_bytes())
+        print(f"  {doc.filename}: {doc.n_chunks} chunks" + (" (updated)" if doc.replaced else ""))
+    print(f"Done: {len(store.list_documents())} documents, {store.count_chunks()} chunks "
+          f"({settings.embed_dim}-dim, model {settings.embed_model})")
 
 
 if __name__ == "__main__":
