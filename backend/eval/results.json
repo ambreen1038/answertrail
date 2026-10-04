@@ -71,11 +71,11 @@
     "retrieval_hit_at_1": 7,
     "answered": 8,
     "false_refusals": 0,
-    "correct_answers": 7,
+    "correct_answers": 8,
     "citation_ok": 8,
     "correct_refusals": 8,
     "hallucinated_answers": 0,
-    "correct_behaviour": 15,
+    "correct_behaviour": 16,
     "n_total": 16
   },
   "hard_model_gate_only": {
@@ -86,11 +86,11 @@
     "retrieval_hit_at_1": 7,
     "answered": 8,
     "false_refusals": 0,
-    "correct_answers": 7,
+    "correct_answers": 8,
     "citation_ok": 8,
     "correct_refusals": 8,
     "hallucinated_answers": 0,
-    "correct_behaviour": 15,
+    "correct_behaviour": 16,
     "n_total": 16
   },
   "rows": [
@@ -131,7 +131,7 @@
         "02-uploading-files",
         "12-troubleshooting"
       ],
-      "latency_ms": 1936
+      "latency_ms": 2383
     },
     {
       "id": "A02",
@@ -149,7 +149,7 @@
       "split": "test",
       "top_score": 0.7549,
       "model_answered": true,
-      "answer": "Each uploaded file can be up to 10 MB.",
+      "answer": "Each file can be up to 10 MB in size.",
       "retrieved_docs": [
         "02-uploading-files",
         "11-privacy-and-security",
@@ -160,7 +160,7 @@
       "cited_docs": [
         "02-uploading-files"
       ],
-      "latency_ms": 2646
+      "latency_ms": 2107
     },
     {
       "id": "A03",
@@ -182,7 +182,7 @@
       "split": "dev",
       "top_score": 0.6834,
       "model_answered": true,
-      "answer": "No, Word documents are rejected because InvoiceFlow only accepts PDF, PNG, JPEG, and WebP files.",
+      "answer": "No, Word documents are not accepted and will be rejected with a message stating that only PDF, PNG, JPEG, or WebP files are allowed.",
       "retrieved_docs": [
         "02-uploading-files",
         "02-uploading-files",
@@ -193,7 +193,7 @@
       "cited_docs": [
         "02-uploading-files"
       ],
-      "latency_ms": 2002
+      "latency_ms": 2183
     },
     {
       "id": "A04",
@@ -223,7 +223,7 @@
         "12-troubleshooting",
         "02-uploading-files"
       ],
-      "latency_ms": 2434
+      "latency_ms": 2711
     },
     {
       "id": "A05",
@@ -244,7 +244,7 @@
       "split": "dev",
       "top_score": 0.7232,
       "model_answered": true,
-      "answer": "No, it will be rejected because InvoiceFlow checks the actual contents of the file rather than just its name or declared type.",
+      "answer": "No, it will be rejected because InvoiceFlow checks the actual contents of the file rather than just its name or extension.",
       "retrieved_docs": [
         "02-uploading-files",
         "02-uploading-files",
@@ -255,7 +255,7 @@
       "cited_docs": [
         "02-uploading-files"
       ],
-      "latency_ms": 2510
+      "latency_ms": 2651
     },
     {
       "id": "A06",
@@ -275,7 +275,7 @@
       "split": "test",
       "top_score": 0.8159,
       "model_answered": true,
-      "answer": "Yes, you can upload several files at once by dragging them onto the upload area or picking multiple files. Each file is processed separately as its own invoice.",
+      "answer": "Yes, you can upload several files at once, and each will be processed separately as its own invoice.",
       "retrieved_docs": [
         "02-uploading-files",
         "02-uploading-files",
@@ -287,7 +287,7 @@
         "02-uploading-files",
         "01-getting-started"
       ],
-      "latency_ms": 2460
+      "latency_ms": 3771
     },
     {
       "id": "A07",
@@ -316,7 +316,7 @@
       "cited_docs": [
         "03-invoice-statuses"
       ],
-      "latency_ms": 1892
+      "latency_ms": 2129
     },
     {
       "id": "A08",
@@ -346,7 +346,7 @@
         "03-invoice-statuses",
         "12-troubleshooting"
       ],
-      "latency_ms": 1867
+      "latency_ms": 2130
     },
     {
       "id": "A09",
@@ -369,7 +369,7 @@
       "split": "dev",
       "top_score": 0.7384,
       "model_answered": true,
-      "answer": "If an invoice is marked as failed, you should delete it and upload the file again, preferably as a clearer scan or photo. If it continues to fail, verify that the file opens normally and is a legitimate invoice.",
+      "answer": "If an invoice is marked as failed, you should delete it and upload the file again, ideally using a clearer scan or photo. You should also check that the file opens normally and is a real invoice.",
       "retrieved_docs": [
         "03-invoice-statuses",
         "12-troubleshooting",
@@ -378,10 +378,9 @@
         "03-invoice-statuses"
       ],
       "cited_docs": [
-        "03-invoice-statuses",
-        "12-troubleshooting"
+        "03-invoice-statuses"
       ],
-      "latency_ms": 2250
+      "latency_ms": 2275
     },
     {
       "id": "A10",
@@ -398,7 +397,7 @@
       "split": "test",
       "top_score": 0.8029,
       "model_answered": true,
-      "answer": "Only approved invoices are included in your exports.",
+      "answer": "Only approved invoices are included when you export. Invoices that are queued, processing, needing review, or failed are left out.",
       "retrieved_docs": [
         "07-exporting-data",
         "07-exporting-data",
@@ -407,10 +406,9 @@
         "03-invoice-statuses"
       ],
       "cited_docs": [
-        "07-exporting-data",
-        "03-invoice-statuses"
+        "07-exporting-data"
       ],
-      "latency_ms": 1817
+      "latency_ms": 2094
     },
     {
       "id": "A11",
@@ -444,7 +442,7 @@
       "cited_docs": [
         "04-automatic-checks"
       ],
-      "latency_ms": 2381
+      "latency_ms": 2408
     },
     {
       "id": "A12",
@@ -461,7 +459,7 @@
       "split": "test",
       "top_score": 0.7926,
       "model_answered": true,
-      "answer": "Numbers are allowed to differ by up to 0.02 so that ordinary rounding does not cause false alarms.",
+      "answer": "Numbers are allowed to differ by up to 0.02, ensuring ordinary rounding does not cause false alarms.",
       "retrieved_docs": [
         "04-automatic-checks",
         "04-automatic-checks",
@@ -472,7 +470,7 @@
       "cited_docs": [
         "04-automatic-checks"
       ],
-      "latency_ms": 1971
+      "latency_ms": 2207
     },
     {
       "id": "A13",
@@ -499,7 +497,7 @@
       "split": "dev",
       "top_score": 0.7113,
       "model_answered": true,
-      "answer": "The vendor, invoice date, invoice number, and total must be present on an invoice.",
+      "answer": "The vendor, invoice date, invoice number, and total are required to be present on an invoice.",
       "retrieved_docs": [
         "04-automatic-checks",
         "05-reviewing-invoices",
@@ -510,7 +508,7 @@
       "cited_docs": [
         "04-automatic-checks"
       ],
-      "latency_ms": 1837
+      "latency_ms": 2107
     },
     {
       "id": "A14",
@@ -539,7 +537,7 @@
       "cited_docs": [
         "04-automatic-checks"
       ],
-      "latency_ms": 2596
+      "latency_ms": 2137
     },
     {
       "id": "A15",
@@ -560,7 +558,7 @@
       "split": "dev",
       "top_score": 0.7667,
       "model_answered": true,
-      "answer": "No, the review screen cannot be used to skip the automatic checks.",
+      "answer": "No, the review screen cannot be used to skip the checks.",
       "retrieved_docs": [
         "05-reviewing-invoices",
         "05-reviewing-invoices",
@@ -571,7 +569,7 @@
       "cited_docs": [
         "04-automatic-checks"
       ],
-      "latency_ms": 1837
+      "latency_ms": 2111
     },
     {
       "id": "A16",
@@ -588,7 +586,7 @@
       "split": "test",
       "top_score": 0.7754,
       "model_answered": true,
-      "answer": "Yes, you can approve an invoice that still fails a check by explicitly acknowledging the remaining problem before approving it.",
+      "answer": "Yes, you can approve an invoice that still fails a check, but you must explicitly acknowledge the remaining problem before it can be approved. This prevents approving a bad invoice by accident.",
       "retrieved_docs": [
         "05-reviewing-invoices",
         "04-automatic-checks",
@@ -599,7 +597,7 @@
       "cited_docs": [
         "05-reviewing-invoices"
       ],
-      "latency_ms": 1907
+      "latency_ms": 2245
     },
     {
       "id": "A17",
@@ -620,7 +618,7 @@
       "split": "dev",
       "top_score": 0.8114,
       "model_answered": true,
-      "answer": "If the file does not look like an invoice or receipt, the app states this instead of showing a form with missing warnings, and you can either delete it or fill out the fields manually if it is actually an invoice.",
+      "answer": "If the file does not look like an invoice or receipt, the app states this instead of displaying a form full of missing warnings. You can then choose to delete the file or manually fill in the fields if it is actually an invoice.",
       "retrieved_docs": [
         "05-reviewing-invoices",
         "02-uploading-files",
@@ -631,7 +629,7 @@
       "cited_docs": [
         "05-reviewing-invoices"
       ],
-      "latency_ms": 2028
+      "latency_ms": 2199
     },
     {
       "id": "A18",
@@ -660,7 +658,7 @@
       "cited_docs": [
         "05-reviewing-invoices"
       ],
-      "latency_ms": 1977
+      "latency_ms": 2230
     },
     {
       "id": "A19",
@@ -695,7 +693,7 @@
       "cited_docs": [
         "06-duplicates"
       ],
-      "latency_ms": 1867
+      "latency_ms": 2465
     },
     {
       "id": "A20",
@@ -731,7 +729,7 @@
       "cited_docs": [
         "06-duplicates"
       ],
-      "latency_ms": 1819
+      "latency_ms": 4980
     },
     {
       "id": "A21",
@@ -750,7 +748,7 @@
       "split": "dev",
       "top_score": 0.8515,
       "model_answered": true,
-      "answer": "No, duplicates are only looked for among your own invoices and are never compared with other users' invoices.",
+      "answer": "Duplicates are only looked for among your own invoices, and other users' invoices are never compared with yours.",
       "retrieved_docs": [
         "06-duplicates",
         "06-duplicates",
@@ -761,7 +759,7 @@
       "cited_docs": [
         "06-duplicates"
       ],
-      "latency_ms": 1969
+      "latency_ms": 3994
     },
     {
       "id": "A22",
@@ -779,7 +777,7 @@
       "split": "test",
       "top_score": 0.7696,
       "model_answered": true,
-      "answer": "Yes, approved invoices can be exported as an Excel (.xlsx) file using the export button at the top of the dashboard.",
+      "answer": "Yes, approved invoices can be exported as an Excel (.xlsx) file by using the export button at the top of the dashboard.",
       "retrieved_docs": [
         "07-exporting-data",
         "07-exporting-data",
@@ -791,7 +789,7 @@
         "07-exporting-data",
         "07-exporting-data"
       ],
-      "latency_ms": 2387
+      "latency_ms": 2376
     },
     {
       "id": "A23",
@@ -808,7 +806,7 @@
       "split": "dev",
       "top_score": 0.7087,
       "model_answered": true,
-      "answer": "In CSV exports, cells starting with characters like '=' are neutralised so that spreadsheet programs cannot run them as formulas, protecting against formula-injection tricks while preserving the text.",
+      "answer": "In CSV exports, any cell starting with =, +, -, or @ is neutralized to protect you from formula-injection tricks hidden inside an invoice while preserving the text itself.",
       "retrieved_docs": [
         "07-exporting-data",
         "07-exporting-data",
@@ -819,7 +817,7 @@
       "cited_docs": [
         "07-exporting-data"
       ],
-      "latency_ms": 2327
+      "latency_ms": 2813
     },
     {
       "id": "A24",
@@ -841,7 +839,7 @@
       "split": "test",
       "top_score": 0.7578,
       "model_answered": true,
-      "answer": "No, deleted invoices and their files cannot be recovered or undone.",
+      "answer": "No, deleted invoices and their files are permanently deleted and cannot be recovered.",
       "retrieved_docs": [
         "08-deleting-invoices",
         "08-deleting-invoices",
@@ -853,7 +851,7 @@
         "08-deleting-invoices",
         "08-deleting-invoices"
       ],
-      "latency_ms": 2521
+      "latency_ms": 8941
     },
     {
       "id": "A25",
@@ -870,7 +868,7 @@
       "split": "dev",
       "top_score": 0.7899,
       "model_answered": true,
-      "answer": "To delete several invoices at once, tick the checkboxes next to the invoices and choose \"Delete selected\", then confirm when asked. You can also use search and the status filter to narrow down the list before selecting them.",
+      "answer": "Tick the checkboxes next to the invoices you want to remove and select \"Delete selected\", then confirm the action.",
       "retrieved_docs": [
         "08-deleting-invoices",
         "08-deleting-invoices",
@@ -879,10 +877,9 @@
         "02-uploading-files"
       ],
       "cited_docs": [
-        "08-deleting-invoices",
         "08-deleting-invoices"
       ],
-      "latency_ms": 1938
+      "latency_ms": 4006
     },
     {
       "id": "A26",
@@ -899,7 +896,7 @@
       "split": "test",
       "top_score": 0.7362,
       "model_answered": true,
-      "answer": "Choose \"Forgot password\" on the sign-in page, enter your email, and follow the link sent to you to set a new password. If the email does not arrive, check your spam folder.",
+      "answer": "On the sign-in page, choose \"Forgot password,\" enter your email, and follow the link sent to you to set a new password. Be sure to check your spam folder if the email does not arrive.",
       "retrieved_docs": [
         "09-account-and-passwords",
         "09-account-and-passwords",
@@ -910,7 +907,7 @@
       "cited_docs": [
         "09-account-and-passwords"
       ],
-      "latency_ms": 1910
+      "latency_ms": 2346
     },
     {
       "id": "A27",
@@ -938,7 +935,7 @@
       "cited_docs": [
         "09-account-and-passwords"
       ],
-      "latency_ms": 2101
+      "latency_ms": 2875
     },
     {
       "id": "A28",
@@ -960,7 +957,7 @@
       "split": "test",
       "top_score": 0.7197,
       "model_answered": true,
-      "answer": "No, if you close the tab, you will not be notified.",
+      "answer": "No, you will not get a notification if you close the tab, because browser desktop notifications only work while the tab is open in the background.",
       "retrieved_docs": [
         "10-notifications",
         "10-notifications",
@@ -971,7 +968,7 @@
       "cited_docs": [
         "10-notifications"
       ],
-      "latency_ms": 1847
+      "latency_ms": 2282
     },
     {
       "id": "A29",
@@ -993,7 +990,7 @@
       "split": "dev",
       "top_score": 0.7531,
       "model_answered": true,
-      "answer": "No, your uploads are stored privately and only you can open your own invoices. Asking for someone else's invoice will return \"not found\".",
+      "answer": "No, only you can see your invoices. They are stored privately, and asking for someone else's invoice will simply return \"not found\".",
       "retrieved_docs": [
         "01-getting-started",
         "11-privacy-and-security",
@@ -1005,7 +1002,7 @@
         "01-getting-started",
         "11-privacy-and-security"
       ],
-      "latency_ms": 1854
+      "latency_ms": 2155
     },
     {
       "id": "A30",
@@ -1036,7 +1033,7 @@
       "cited_docs": [
         "11-privacy-and-security"
       ],
-      "latency_ms": 2176
+      "latency_ms": 2144
     },
     {
       "id": "A31",
@@ -1064,7 +1061,7 @@
       "cited_docs": [
         "12-troubleshooting"
       ],
-      "latency_ms": 2047
+      "latency_ms": 2298
     },
     {
       "id": "A32",
@@ -1094,7 +1091,7 @@
       "cited_docs": [
         "12-troubleshooting"
       ],
-      "latency_ms": 2352
+      "latency_ms": 2135
     },
     {
       "id": "U01",
@@ -1113,7 +1110,7 @@
         "10-notifications"
       ],
       "cited_docs": [],
-      "latency_ms": 8840
+      "latency_ms": 2037
     },
     {
       "id": "U02",
@@ -1132,7 +1129,7 @@
         "06-duplicates"
       ],
       "cited_docs": [],
-      "latency_ms": 17428
+      "latency_ms": 2149
     },
     {
       "id": "U03",
@@ -1151,7 +1148,7 @@
         "12-troubleshooting"
       ],
       "cited_docs": [],
-      "latency_ms": 1703
+      "latency_ms": 2576
     },
     {
       "id": "U04",
@@ -1170,7 +1167,7 @@
         "06-duplicates"
       ],
       "cited_docs": [],
-      "latency_ms": 1877
+      "latency_ms": 2021
     },
     {
       "id": "U05",
@@ -1189,7 +1186,7 @@
         "12-troubleshooting"
       ],
       "cited_docs": [],
-      "latency_ms": 1716
+      "latency_ms": 2087
     },
     {
       "id": "U06",
@@ -1208,7 +1205,7 @@
         "01-getting-started"
       ],
       "cited_docs": [],
-      "latency_ms": 1956
+      "latency_ms": 2132
     },
     {
       "id": "U07",
@@ -1227,7 +1224,7 @@
         "01-getting-started"
       ],
       "cited_docs": [],
-      "latency_ms": 1707
+      "latency_ms": 1998
     },
     {
       "id": "U08",
@@ -1246,7 +1243,7 @@
         "04-automatic-checks"
       ],
       "cited_docs": [],
-      "latency_ms": 1921
+      "latency_ms": 2007
     },
     {
       "id": "U09",
@@ -1265,7 +1262,7 @@
         "01-getting-started"
       ],
       "cited_docs": [],
-      "latency_ms": 1902
+      "latency_ms": 2129
     },
     {
       "id": "U10",
@@ -1284,7 +1281,7 @@
         "01-getting-started"
       ],
       "cited_docs": [],
-      "latency_ms": 1958
+      "latency_ms": 2119
     },
     {
       "id": "U11",
@@ -1303,7 +1300,7 @@
         "12-troubleshooting"
       ],
       "cited_docs": [],
-      "latency_ms": 1951
+      "latency_ms": 2043
     },
     {
       "id": "U12",
@@ -1322,7 +1319,7 @@
         "09-account-and-passwords"
       ],
       "cited_docs": [],
-      "latency_ms": 1749
+      "latency_ms": 2066
     },
     {
       "id": "HA01",
@@ -1340,7 +1337,7 @@
       "split": "hard",
       "top_score": 0.7655,
       "model_answered": true,
-      "answer": "Since your scanned bill exceeds the 10 MB limit, you can re-save it at a lower resolution or compress the PDF and upload it again.",
+      "answer": "If your file is too big, you can re-save it at a lower resolution or compress the PDF so that it is under the 10 MB limit before uploading it again.",
       "retrieved_docs": [
         "02-uploading-files",
         "02-uploading-files",
@@ -1349,9 +1346,10 @@
         "12-troubleshooting"
       ],
       "cited_docs": [
-        "02-uploading-files"
+        "02-uploading-files",
+        "12-troubleshooting"
       ],
-      "latency_ms": 2009
+      "latency_ms": 2540
     },
     {
       "id": "HA02",
@@ -1371,7 +1369,7 @@
       "split": "hard",
       "top_score": 0.669,
       "model_answered": true,
-      "answer": "Large batches take some time to process, and the system automatically attempts retries up to three times. If an invoice remains stuck, it may just be taking a while due to the batch size.",
+      "answer": "Large batches take a while to process, and the app automatically retries up to three times. If an invoice ends as failed, you should delete it and upload it again.",
       "retrieved_docs": [
         "12-troubleshooting",
         "02-uploading-files",
@@ -1382,7 +1380,7 @@
       "cited_docs": [
         "12-troubleshooting"
       ],
-      "latency_ms": 2133
+      "latency_ms": 2697
     },
     {
       "id": "HA03",
@@ -1401,7 +1399,7 @@
       "split": "hard",
       "top_score": 0.7312,
       "model_answered": true,
-      "answer": "If the file does not look like an invoice or receipt, the app will inform you, and you can either delete it or fill in the fields by hand if it truly is an invoice.",
+      "answer": "If the file does not look like an invoice or receipt, the app will indicate this. Otherwise, every result can be reviewed and edited.",
       "retrieved_docs": [
         "12-troubleshooting",
         "05-reviewing-invoices",
@@ -1410,9 +1408,10 @@
         "04-automatic-checks"
       ],
       "cited_docs": [
+        "12-troubleshooting",
         "05-reviewing-invoices"
       ],
-      "latency_ms": 1835
+      "latency_ms": 3147
     },
     {
       "id": "HA04",
@@ -1430,7 +1429,7 @@
       "split": "hard",
       "top_score": 0.769,
       "model_answered": true,
-      "answer": "Yes, you can approve an invoice with an arithmetic error by explicitly acknowledging the problem on the review screen.",
+      "answer": "Yes, you can approve an invoice with an arithmetic error from the supplier after you explicitly acknowledge the problem.",
       "retrieved_docs": [
         "12-troubleshooting",
         "05-reviewing-invoices",
@@ -1442,7 +1441,7 @@
         "12-troubleshooting",
         "05-reviewing-invoices"
       ],
-      "latency_ms": 1682
+      "latency_ms": 4046
     },
     {
       "id": "HA05",
@@ -1461,7 +1460,7 @@
       "split": "hard",
       "top_score": 0.7502,
       "model_answered": true,
-      "answer": "You can export your approved invoices at any time by clicking the export button at the top of the dashboard, which allows you to open the resulting CSV or Excel file in spreadsheet applications like Excel or Google Sheets.",
+      "answer": "You can export approved invoices at any time by clicking the export button at the top of the dashboard, allowing you to open the file in Excel, Google Sheets, or your accounting tool.",
       "retrieved_docs": [
         "07-exporting-data",
         "07-exporting-data",
@@ -1473,7 +1472,7 @@
         "07-exporting-data",
         "07-exporting-data"
       ],
-      "latency_ms": 2029
+      "latency_ms": 4922
     },
     {
       "id": "HA06",
@@ -1493,7 +1492,7 @@
       "split": "hard",
       "top_score": 0.727,
       "model_answered": true,
-      "answer": "Uploading the same invoice twice would double-count it in your records, so InvoiceFlow looks for duplicates.",
+      "answer": "Uploading the same invoice twice would double-count it in your records, so InvoiceFlow flags it as a duplicate when another of your invoices has the same vendor, invoice number, and total.",
       "retrieved_docs": [
         "06-duplicates",
         "02-uploading-files",
@@ -1502,9 +1501,10 @@
         "06-duplicates"
       ],
       "cited_docs": [
+        "06-duplicates",
         "06-duplicates"
       ],
-      "latency_ms": 1792
+      "latency_ms": 6835
     },
     {
       "id": "HA07",
@@ -1524,7 +1524,7 @@
       "split": "hard",
       "top_score": 0.7725,
       "model_answered": true,
-      "answer": "No, they cannot open it. A link to someone else's invoice will simply show \"not found\" because files are stored privately and only served after checking that you own the invoice.",
+      "answer": "No, only you can open your own invoices. A link to someone else's invoice will simply show \"not found\".",
       "retrieved_docs": [
         "01-getting-started",
         "11-privacy-and-security",
@@ -1536,7 +1536,7 @@
         "01-getting-started",
         "11-privacy-and-security"
       ],
-      "latency_ms": 1950
+      "latency_ms": 6623
     },
     {
       "id": "HA08",
@@ -1558,7 +1558,7 @@
       "split": "hard",
       "top_score": 0.7403,
       "model_answered": true,
-      "answer": "No, only approved invoices are exported, while failed invoices are left out.",
+      "answer": "No, you cannot export a failed invoice. Only approved invoices are included in exports, while failed invoices are left out.",
       "retrieved_docs": [
         "03-invoice-statuses",
         "12-troubleshooting",
@@ -1567,9 +1567,10 @@
         "03-invoice-statuses"
       ],
       "cited_docs": [
-        "07-exporting-data"
+        "07-exporting-data",
+        "03-invoice-statuses"
       ],
-      "latency_ms": 1950
+      "latency_ms": 4451
     },
     {
       "id": "HU01",
@@ -1588,7 +1589,7 @@
         "01-getting-started"
       ],
       "cited_docs": [],
-      "latency_ms": 1756
+      "latency_ms": 4875
     },
     {
       "id": "HU02",
@@ -1607,7 +1608,7 @@
         "02-uploading-files"
       ],
       "cited_docs": [],
-      "latency_ms": 1662
+      "latency_ms": 3688
     },
     {
       "id": "HU03",
@@ -1626,7 +1627,7 @@
         "12-troubleshooting"
       ],
       "cited_docs": [],
-      "latency_ms": 2129
+      "latency_ms": 3410
     },
     {
       "id": "HU04",
@@ -1645,7 +1646,7 @@
         "01-getting-started"
       ],
       "cited_docs": [],
-      "latency_ms": 1776
+      "latency_ms": 3174
     },
     {
       "id": "HU05",
@@ -1664,7 +1665,7 @@
         "01-getting-started"
       ],
       "cited_docs": [],
-      "latency_ms": 1711
+      "latency_ms": 2096
     },
     {
       "id": "HU06",
@@ -1683,7 +1684,7 @@
         "11-privacy-and-security"
       ],
       "cited_docs": [],
-      "latency_ms": 1771
+      "latency_ms": 2557
     },
     {
       "id": "HU07",
@@ -1702,7 +1703,7 @@
         "11-privacy-and-security"
       ],
       "cited_docs": [],
-      "latency_ms": 1765
+      "latency_ms": 2215
     },
     {
       "id": "HU08",
@@ -1721,7 +1722,7 @@
         "11-privacy-and-security"
       ],
       "cited_docs": [],
-      "latency_ms": 1857
+      "latency_ms": 3328
     }
   ]
 }

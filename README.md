@@ -11,8 +11,8 @@ product (the product name is a setting). The demo knowledge base is a help cente
 [InvoiceFlow](https://github.com/ambreen1038/invoiceflow), my AI invoice processing app. This is a
 separate project from InvoiceFlow and shares no code with it.
 
-> Status: customer chat, document upload, admin page with Supabase login, evaluation and tests are
-> done. Rate limiting and deployment are next; there is no live demo yet.
+> Status: landing page, customer chat, public evaluation page, document upload, admin login (Supabase),
+> rate limiting and tests are done. Deployment is next; there is no live demo yet.
 
 ## Why this exists
 
@@ -42,6 +42,20 @@ question ──▶ embed ──▶ cosine search (top 5)
 
 Refusal is deliberately two independent checks, and an answer with no valid citation is dropped,
 because an uncited answer is indistinguishable from an invented one.
+
+## What's in the app
+
+| Page | Who | What it is |
+|---|---|---|
+| `/` | everyone | Landing page: what it does, how it works, and live evaluation numbers |
+| `/chat` | everyone | The assistant: cited answers, or a clear "not in the help articles" |
+| `/evaluation` | everyone | Every test question with its outcome, per-split results, and the limits of the evaluation |
+| `/admin` | administrators | Sign in, then upload and delete documents |
+
+The landing page has a top navbar; the app pages share a top bar plus a side navbar (a slide-in drawer
+on phones). The numbers on the landing and evaluation pages are never typed in: the backend serves them
+from `backend/eval/results.json` (`GET /api/evaluation`) and recomputes each question's outcome with the
+same grading rules and threshold as the evaluation script, so the pages cannot drift from the real results.
 
 ## Adding documents (admin)
 
@@ -93,6 +107,41 @@ Design decisions worth knowing:
    (the direct connection is IPv6-only on the free plan). Then load the knowledge base:
    `python -m app.ingest --reset`. The tables and their security settings are created automatically.
 
+## Rate limiting
+
+Every chat question costs Gemini quota (one embedding plus one generation), so the public endpoint is
+limited before any AI call is made:
+
+| Limit | Default | Setting |
+|---|---|---|
+| Per visitor (IP), per minute, sliding window | 10 | `RATE_LIMIT_PER_MINUTE` |
+| Per visitor (IP), per UTC day | 150 | `RATE_LIMIT_PER_CLIENT_PER_DAY` |
+| Everyone together, per UTC day (cost backstop) | 500 | `RATE_LIMIT_GLOBAL_PER_DAY` |
+
+A refused request gets HTTP 429 with a `Retry-After` header and a plain message ("Please wait 39
+seconds and try again", or "daily capacity reached"). Refused requests consume nothing, so being
+blocked never lengthens the block, and invalid requests still count, so junk can't be used to dodge
+the limit. The health check is not limited.
+
+Known limits of this design:
+
+- State is in memory: it is per server process and resets on restart. That suits a single free-tier
+  instance; several instances would need a shared store such as Redis.
+- The visitor key is the connection's IP. Behind a proxy it is only the real visitor if proxy
+  headers are handled correctly, and a determined attacker can rotate addresses. The global daily cap
+  is the backstop that still bounds total cost. The admin endpoints are protected by login instead.
+
+## Performance note
+
+Moving the database from local Docker to a remote Supabase project made each answer take about 9
+seconds, because the code opened a new database connection for every question: roughly 2.3 s to
+connect, ~5 s more to set up the `vector` type on it, and only 0.4 s for the query itself. A small
+connection pool (connections opened once at start-up and reused) brought the database step from
+7.6 s to 0.37 s and the median answer to 2.3 s. The pool's two failure modes are covered by tests
+that run against a real Postgres (`RUN_INTEGRATION=1 python -m pytest tests/test_store_integration.py`):
+a failed replacement upload leaves the existing document untouched, and a connection the server drops
+while idle is replaced transparently. When deploying, put the backend in a region close to the database.
+
 ## Stack
 
 | Layer | Choice |
@@ -113,16 +162,17 @@ Design decisions worth knowing:
 |---|---|---|---|---|---|---|
 | Dev | 16 answerable + 6 unanswerable | 16/16 | 6/6 | 16/16 | 15/16 | 16/16 |
 | **Test** | 16 answerable + 6 unanswerable | **16/16** | **6/6** | 16/16 | 15/16 | 16/16 |
-| Hard | 8 answerable + 8 unanswerable | 7/8 | 8/8 | 8/8 | 7/8 | 8/8 |
+| Hard | 8 answerable + 8 unanswerable | 8/8 | 8/8 | 8/8 | 7/8 | 8/8 |
 
 Hallucinated answers (a question the docs don't cover that got an answer anyway): **0/20**.
-Median latency 1.9 s, p90 2.5 s (retrieval + one LLM call).
+Median latency 2.3 s, p90 4.5 s, max 8.9 s (retrieval + one LLM call), measured from Lahore against a
+Supabase database in Sydney.
 
-Numbers are for the pinned model `gemini-3.5-flash-lite`. An earlier run used the moving alias
-`gemini-flash-lite-latest` and got 8/8 on the hard set. The one difference is a question where the new
-model answered "InvoiceFlow looks for duplicates" without saying what happens to them. That is one
-question, within run-to-run noise, but I report what I measured and pinned the model so the published
-numbers stay reproducible.
+Numbers are for the pinned model `gemini-3.5-flash-lite` on the Supabase database. Across runs of this
+same pinned model, the hard set scored 7/8 once and 8/8 on later runs: one question ("what happens if I
+upload the identical bill twice?") sometimes gets a vaguer answer that doesn't say what happens to the
+duplicate. That is the run-to-run variation to expect from an LLM, and it is why single results should
+be read as approximate.
 
 **Unanswerable** means the help center is silent on the topic. The correct behaviour is to decline,
 *not* to claim the feature doesn't exist. Several are deliberate near-misses that sit close to a real
@@ -163,7 +213,7 @@ python -m venv ../.venv && ../.venv/Scripts/pip install -r requirements-dev.txt
 cp ../.env.example .env                      # then fill in GEMINI_API_KEY and the Supabase values
 python -m app.ingest                         # chunk, embed and store the knowledge base
 uvicorn app.main:app --reload                # API on :8000
-python -m pytest                             # 55 offline tests
+python -m pytest                             # 76 offline tests (+3 optional DB integration tests)
 python -m app.ingest --reset                 # clean state: only kb/ (required before the evaluation)
 python eval/run_eval.py                      # live evaluation (refuses to run if extra documents exist)
 ```
@@ -178,7 +228,7 @@ kb/                 12 help articles (the knowledge base)
 backend/app/        config, extraction, chunking, gemini client, pgvector store, ingestion, answer logic, FastAPI app
 backend/eval/       questions, question builder, evaluation runner, results.json
 backend/tests/      offline unit tests
-frontend/           Next.js: chat UI with citations and a clear "couldn't find that" state, plus /admin
+frontend/           Next.js: landing page, chat, evaluation page and admin, in a shared app shell
 ```
 
 ## Limitations and roadmap
@@ -190,10 +240,8 @@ frontend/           Next.js: chat UI with citations and a clear "couldn't find t
   (including generated PDFs, a scanned/no-text PDF and a damaged one) and a manual end-to-end check,
   but retrieval quality on messy real-world PDFs has not been measured.
 - Text-layer PDFs only; no OCR for scanned documents. Page-based chunking can split a fact across pages.
-- No rate limiting on the public chat endpoint yet. Free-tier Supabase projects pause after a week of inactivity.
+- Free-tier Supabase projects pause after a week of inactivity.
 - Admin login uses Supabase's default browser session storage; there is a single admin role, no per-user permissions.
-- [ ] Rate limiting
-- [ ] Evaluation dashboard page
 - [ ] Deploy (Vercel + Render + Supabase Postgres with pgvector)
 - [ ] Tool calling with human confirmation before any action (for example, look up an invoice's status)
 - [ ] Evaluate on questions written by someone other than the author

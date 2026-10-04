@@ -1,11 +1,12 @@
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from . import answer, documents, store
+from . import answer, documents, evaluation, store
 from .auth import require_admin
+from .ratelimit import RateLimiter
 from .config import settings
 from .extract import ExtractionError
 from .gemini import GeminiError
@@ -14,7 +15,9 @@ from .gemini import GeminiError
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     store.init_schema()  # creates/migrates tables; safe to run on every start-up
+    store.get_pool()     # open the database connections now, so the first visitor doesn't pay for it
     yield
+    store.close_pool()
 
 
 app = FastAPI(title="AnswerTrail API", lifespan=lifespan)
@@ -38,7 +41,23 @@ def health():
     return {"status": "ok", "chunks": store.count_chunks()}
 
 
-@app.post("/api/ask")
+limiter = RateLimiter.from_settings()
+
+
+def rate_limit_ask(request: Request) -> None:
+    """Refuse the request with 429 + Retry-After if this visitor (or the whole demo) is over a limit.
+    Runs BEFORE any embedding or generation call, so a refused request costs no quota."""
+    client = request.client.host if request.client else "unknown"
+    decision = limiter.check(client)
+    if not decision.allowed:
+        raise HTTPException(
+            status_code=429,
+            detail=decision.message,
+            headers={"Retry-After": str(decision.retry_after)},
+        )
+
+
+@app.post("/api/ask", dependencies=[Depends(rate_limit_ask)])
 def ask(req: AskRequest):
     try:
         result = answer.ask(req.question.strip())
@@ -46,6 +65,16 @@ def ask(req: AskRequest):
         # Don't leak upstream details to the client.
         raise HTTPException(status_code=502, detail="The answer service is temporarily unavailable.") from exc
     return result.to_dict()
+
+
+@app.get("/api/evaluation")
+def get_evaluation(response: Response):
+    """The latest evaluation results, for the public Evaluation page and the landing page."""
+    raw = evaluation.load_raw(settings.eval_results_path)
+    if raw is None:
+        raise HTTPException(status_code=404, detail="No evaluation results have been published yet.")
+    response.headers["Cache-Control"] = "public, max-age=300"
+    return evaluation.build_report(raw)
 
 
 # ------------------------------------------------------------------ admin (Supabase login required)

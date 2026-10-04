@@ -22,6 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app import answer  # noqa: E402
+from app.grading import phrase_correct  # noqa: E402,F401  (re-exported for tests)
 from app.config import settings  # noqa: E402
 
 HERE = Path(__file__).parent
@@ -29,11 +30,6 @@ HERE = Path(__file__).parent
 
 def load_questions() -> list[dict]:
     return [json.loads(l) for l in (HERE / "questions.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
-
-
-def phrase_correct(text: str, any_of: list[list[str]]) -> bool:
-    t = text.lower()
-    return all(any(p.lower() in t for p in group) for group in any_of)
 
 
 def run_all(questions: list[dict]) -> list[dict]:

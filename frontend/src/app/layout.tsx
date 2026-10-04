@@ -10,7 +10,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <noscript>
+          <style>{`.reveal{opacity:1}`}</style>
+        </noscript>
+        {children}
+      </body>
     </html>
   );
 }

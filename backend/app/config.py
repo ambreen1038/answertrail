@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     # "do the sources answer this?" check does that work. See eval results in the README.
     min_similarity: float = 0.5
     kb_dir: Path = ROOT / "kb"
+    eval_results_path: Path = ROOT / "backend" / "eval" / "results.json"
     cors_origins: str = "http://localhost:3000"
     max_question_chars: int = 500
 
@@ -34,6 +35,12 @@ class Settings(BaseSettings):
     supabase_url: str = ""          # e.g. https://abcdefgh.supabase.co
     supabase_anon_key: str = ""     # the public (anon) key; safe to be public by design
     admin_emails: str = ""          # comma-separated allowlist of admin email addresses
+
+    # --- rate limiting for the public chat endpoint (each question costs Gemini quota) ---
+    rate_limit_per_minute: int = 10            # per client (IP)
+    rate_limit_per_client_per_day: int = 150   # per client (IP), per UTC day
+    rate_limit_global_per_day: int = 500       # everyone together, per UTC day: the cost backstop
+    rate_limit_max_clients: int = 5000         # how many clients we remember (bounds memory)
 
     # --- document upload (admin) ---
     max_upload_mb: int = 10
