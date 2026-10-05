@@ -1,0 +1,1041 @@
+{
+  "gen_model": "gemini-3.5-flash-lite",
+  "repeats": 3,
+  "n_cases": 14,
+  "rows": [
+    {
+      "id": "F01",
+      "first": "How big can an uploaded file be?",
+      "followup": "What happens if it's bigger?",
+      "answerable": true,
+      "gold_docs": [
+        "02-uploading-files"
+      ],
+      "any_of": [
+        [
+          "reject"
+        ]
+      ],
+      "first_answered": true,
+      "runs": [
+        {
+          "standalone": "What happens if an uploaded file is bigger than 10 MB?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "A larger file is rejected with a message that names the file and the limit. You can then re-save the scan at a lower resolution or compress the PDF and upload it again.",
+            "cited": [
+              "02-uploading-files#1"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "A larger file is rejected with a message that names the file and the limit.",
+            "cited": [
+              "02-uploading-files#1"
+            ]
+          }
+        },
+        {
+          "standalone": "What happens if an uploaded file is bigger than 10 MB?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "A larger file is rejected with a message that names the file and the limit. You can re-save the scan at a lower resolution or compress the PDF and upload it again.",
+            "cited": [
+              "02-uploading-files#1"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "A larger file is rejected with a message that names the file and the limit.",
+            "cited": [
+              "02-uploading-files#1"
+            ]
+          }
+        },
+        {
+          "standalone": "What happens if an uploaded file is bigger than 10 MB?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "A larger file is rejected with a message that names the file and the limit. You can then re-save your scan at a lower resolution or compress the PDF and upload it again.",
+            "cited": [
+              "02-uploading-files#1"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "Each file can be up to 10 MB, and any larger file is rejected with a message that names the file and the limit. You can re-save the file at a lower resolution or compress the PDF and try uploading it again.",
+            "cited": [
+              "02-uploading-files#1",
+              "12-troubleshooting#5"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F02",
+      "first": "What file types can I upload?",
+      "followup": "Is that checked by the name only?",
+      "answerable": true,
+      "gold_docs": [
+        "02-uploading-files",
+        "11-privacy-and-security"
+      ],
+      "any_of": [
+        [
+          "content"
+        ]
+      ],
+      "first_answered": true,
+      "runs": [
+        {
+          "standalone": "Are uploaded file types checked by name only in InvoiceFlow?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, files are checked by their contents, not just their name.",
+            "cited": [
+              "11-privacy-and-security#2"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, InvoiceFlow checks the actual contents of the file rather than relying solely on its name or declared type.",
+            "cited": [
+              "02-uploading-files#2"
+            ]
+          }
+        },
+        {
+          "standalone": "Are uploaded file types checked by name only in InvoiceFlow?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, files are checked by their contents, not just their name.",
+            "cited": [
+              "11-privacy-and-security#2"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, InvoiceFlow checks the actual contents of the file rather than relying solely on its name or declared type.",
+            "cited": [
+              "02-uploading-files#2"
+            ]
+          }
+        },
+        {
+          "standalone": "Are uploaded file types checked by name only in InvoiceFlow?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, files are checked by their contents, not just their name.",
+            "cited": [
+              "11-privacy-and-security#2"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, InvoiceFlow checks the actual contents of the file rather than just its name or declared type.",
+            "cited": [
+              "02-uploading-files#2"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F03",
+      "first": "What does the Needs review status mean?",
+      "followup": "And what does Failed mean?",
+      "answerable": true,
+      "gold_docs": [
+        "03-invoice-statuses"
+      ],
+      "any_of": [
+        [
+          "read",
+          "retr",
+          "attempt"
+        ]
+      ],
+      "first_answered": true,
+      "runs": [
+        {
+          "standalone": "What does the Failed status mean?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "Failed means the file could not be read even after several automatic retries.",
+            "cited": [
+              "03-invoice-statuses#1"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "The Failed status means that the file could not be read even after several automatic retries.",
+            "cited": [
+              "03-invoice-statuses#1"
+            ]
+          }
+        },
+        {
+          "standalone": "What does the Failed status mean?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "Failed means that the file could not be read even after several automatic retries.",
+            "cited": [
+              "03-invoice-statuses#1"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "The Failed status means that the file could not be read even after several automatic retries.",
+            "cited": [
+              "03-invoice-statuses#1"
+            ]
+          }
+        },
+        {
+          "standalone": "What does the Failed status mean?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "Failed means that the file could not be read even after several automatic retries.",
+            "cited": [
+              "03-invoice-statuses#1"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "The Failed status means that the file could not be read even after several automatic retries.",
+            "cited": [
+              "03-invoice-statuses#1"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F04",
+      "first": "How does duplicate detection work?",
+      "followup": "Does it delete them automatically?",
+      "answerable": true,
+      "gold_docs": [
+        "06-duplicates"
+      ],
+      "any_of": [
+        [
+          "not",
+          "no ",
+          "nothing"
+        ],
+        [
+          "flag",
+          "review",
+          "decide",
+          "compare"
+        ]
+      ],
+      "first_answered": true,
+      "runs": [
+        {
+          "standalone": "Does InvoiceFlow delete duplicate invoices automatically?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, duplicates are flagged on the review screen so you can decide what to do, and nothing is deleted automatically.",
+            "cited": [
+              "06-duplicates#2"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, InvoiceFlow does not delete duplicates automatically; they are flagged on the review screen so you can decide what to do.",
+            "cited": [
+              "06-duplicates#2"
+            ]
+          }
+        },
+        {
+          "standalone": "Does InvoiceFlow delete duplicate invoices automatically?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, duplicates are flagged on the review screen so you can decide what to do, and nothing is deleted automatically.",
+            "cited": [
+              "06-duplicates#2"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, nothing is deleted automatically. A duplicate is flagged on the review screen so you can decide what to do.",
+            "cited": [
+              "06-duplicates#2"
+            ]
+          }
+        },
+        {
+          "standalone": "Does InvoiceFlow delete duplicate invoices automatically?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, duplicates are flagged on the review screen for you to decide what to do, and nothing is deleted automatically.",
+            "cited": [
+              "06-duplicates#2"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, nothing is deleted automatically when a duplicate is flagged.",
+            "cited": [
+              "06-duplicates#2"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F05",
+      "first": "Can I export my invoices?",
+      "followup": "Does that include the ones still needing review?",
+      "answerable": true,
+      "gold_docs": [
+        "07-exporting-data"
+      ],
+      "any_of": [
+        [
+          "approved"
+        ]
+      ],
+      "first_answered": true,
+      "runs": [
+        {
+          "standalone": "Does exporting invoices include the ones still needing review?",
+          "without_rewriting": {
+            "ok": false,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, only approved invoices are exported, while invoices needing review are left out.",
+            "cited": [
+              "07-exporting-data#1"
+            ]
+          }
+        },
+        {
+          "standalone": "Does exporting invoices include the ones still needing review?",
+          "without_rewriting": {
+            "ok": false,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, invoices that need review are left out of exports. Only approved invoices are included.",
+            "cited": [
+              "07-exporting-data#1",
+              "03-invoice-statuses#1"
+            ]
+          }
+        },
+        {
+          "standalone": "Does exporting invoices include the ones still needing review?",
+          "without_rewriting": {
+            "ok": false,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, only approved invoices are exported, while invoices needing review are left out.",
+            "cited": [
+              "07-exporting-data#1"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F06",
+      "first": "Can I delete several invoices at once?",
+      "followup": "Can I get them back afterwards?",
+      "answerable": true,
+      "gold_docs": [
+        "08-deleting-invoices"
+      ],
+      "any_of": [
+        [
+          "cannot",
+          "can't",
+          "can not",
+          "permanent",
+          "not be recovered",
+          "unrecover"
+        ]
+      ],
+      "first_answered": true,
+      "runs": [
+        {
+          "standalone": "Can I recover deleted invoices afterwards?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, deleted invoices and their files cannot be recovered or undone once they are deleted.",
+            "cited": [
+              "08-deleting-invoices#3",
+              "08-deleting-invoices#0"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, deleted invoices and their files cannot be recovered and are permanently deleted.",
+            "cited": [
+              "08-deleting-invoices#3",
+              "08-deleting-invoices#0"
+            ]
+          }
+        },
+        {
+          "standalone": "Can I recover deleted invoices afterwards?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, deleted invoices and their files cannot be recovered or undone once they are deleted.",
+            "cited": [
+              "08-deleting-invoices#3",
+              "08-deleting-invoices#0"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, deleted invoices and their files are permanently deleted and cannot be recovered.",
+            "cited": [
+              "08-deleting-invoices#3",
+              "08-deleting-invoices#0"
+            ]
+          }
+        },
+        {
+          "standalone": "Can I recover deleted invoices afterwards?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, deleted invoices and their files cannot be recovered and the action cannot be undone.",
+            "cited": [
+              "08-deleting-invoices#3",
+              "08-deleting-invoices#0"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, deleted invoices and their files cannot be recovered and the deletion is permanent.",
+            "cited": [
+              "08-deleting-invoices#3",
+              "08-deleting-invoices#0",
+              "08-deleting-invoices#1"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F07",
+      "first": "I forgot my password. What do I do?",
+      "followup": "The email never arrived. What now?",
+      "answerable": true,
+      "gold_docs": [
+        "09-account-and-passwords"
+      ],
+      "any_of": [
+        [
+          "spam"
+        ]
+      ],
+      "first_answered": true,
+      "runs": [
+        {
+          "standalone": "What should I do if the password reset email never arrived?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "If you cannot find your confirmation or password reset email, check your spam folder. For account creation, you can also sign up again with a correctly spelled address if needed, or request a new reset link if it is for a password.",
+            "cited": [
+              "09-account-and-passwords#3",
+              "09-account-and-passwords#1"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "If the password reset email does not arrive, check your spam folder.",
+            "cited": [
+              "09-account-and-passwords#1"
+            ]
+          }
+        },
+        {
+          "standalone": "What should I do if the password reset email never arrived?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "If your confirmation or password reset email never arrived, you should check your spam folder.",
+            "cited": [
+              "09-account-and-passwords#3",
+              "09-account-and-passwords#1"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "If the password reset email does not arrive, you should check your spam folder.",
+            "cited": [
+              "09-account-and-passwords#1"
+            ]
+          }
+        },
+        {
+          "standalone": "What should I do if the password reset email never arrived?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "If your confirmation or password reset email never arrived, check your spam folder. For new accounts, you can also sign up again with a correctly spelled address, and for password issues, you can request a new link.",
+            "cited": [
+              "09-account-and-passwords#3",
+              "09-account-and-passwords#1"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "If the password reset email does not arrive, check your spam folder.",
+            "cited": [
+              "09-account-and-passwords#1"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F08",
+      "first": "How many pages of a PDF are read?",
+      "followup": "How do I deal with that for a long invoice?",
+      "answerable": true,
+      "gold_docs": [
+        "02-uploading-files",
+        "12-troubleshooting"
+      ],
+      "any_of": [
+        [
+          "split",
+          "check the totals",
+          "review"
+        ]
+      ],
+      "first_answered": true,
+      "runs": [
+        {
+          "standalone": "How do I deal with long invoices when only the first two pages are read?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "Only the first two pages of a PDF are read. If an invoice runs longer than two pages, the extracted fields come from those first two pages, so check the totals during review.",
+            "cited": [
+              "02-uploading-files#3"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "To deal with long invoices, you should split longer documents before uploading them.",
+            "cited": [
+              "12-troubleshooting#4"
+            ]
+          }
+        },
+        {
+          "standalone": "How do I deal with reading only the first two pages for a long invoice?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "Only the first two pages of a PDF are read. If an invoice runs longer than two pages, check the totals during review since the extracted fields come only from those first two pages.",
+            "cited": [
+              "02-uploading-files#3"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "To deal with long invoices, you should split longer documents before uploading them.",
+            "cited": [
+              "12-troubleshooting#4"
+            ]
+          }
+        },
+        {
+          "standalone": "How do I deal with reading only the first two pages for a long invoice?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "Only the first two pages of a PDF are read. If your invoice is longer than two pages, the extracted fields will only come from those first two pages, so be sure to check the totals during the review.",
+            "cited": [
+              "02-uploading-files#3"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "To deal with long invoices, you should split longer documents before uploading them.",
+            "cited": [
+              "12-troubleshooting#4"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F09",
+      "first": "What does the line item check do?",
+      "followup": "What about the totals?",
+      "answerable": true,
+      "gold_docs": [
+        "04-automatic-checks"
+      ],
+      "any_of": [
+        [
+          "subtotal"
+        ]
+      ],
+      "first_answered": true,
+      "runs": [
+        {
+          "standalone": "What does the totals check do?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "InvoiceFlow automatically re-calculates the invoice numbers to ensure they add up correctly, allowing a rounding tolerance of up to 0.02 [S4, S5]. The line amounts must add up to the subtotal, or to the total if no subtotal is present, and the subtotal plus tax must equal the total [S1].",
+            "cited": [
+              "04-automatic-checks#2",
+              "04-automatic-checks#4",
+              "04-automatic-checks#0"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "The totals check ensures that the line amounts add up to the subtotal, or to the total if there is no subtotal. It also checks that the subtotal plus tax equals the total, treating missing tax as zero.",
+            "cited": [
+              "04-automatic-checks#2"
+            ]
+          }
+        },
+        {
+          "standalone": "What does the totals check do?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "InvoiceFlow automatically re-calculates the numbers after reading an invoice and flags anything that does not add up. The line amounts must add up to the subtotal, or to the total if there is no subtotal, and subtotal plus tax must equal the total. Numbers are allowed to differ by up to 0.02 for rounding tolerance.",
+            "cited": [
+              "04-automatic-checks#2",
+              "04-automatic-checks#4",
+              "04-automatic-checks#0"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "The totals check ensures that line amounts add up to the subtotal, or to the total if there is no subtotal. It also checks that the subtotal plus tax equals the total, treating unprinted tax as zero.",
+            "cited": [
+              "04-automatic-checks#2"
+            ]
+          }
+        },
+        {
+          "standalone": "What does the line item check do for the totals?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "InvoiceFlow automatically re-calculates invoice numbers to ensure line amounts add up to the subtotal, line amounts plus tax equal the total (if there is no subtotal), and subtotal plus tax equals the total, allowing a rounding tolerance of up to 0.02.",
+            "cited": [
+              "04-automatic-checks#2",
+              "04-automatic-checks#4",
+              "04-automatic-checks#0"
+            ]
+          },
+          "with_rewriting": {
+            "ok": false,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "F10",
+      "first": "What happens if reading a file fails?",
+      "followup": "How many attempts is that?",
+      "answerable": true,
+      "gold_docs": [
+        "03-invoice-statuses",
+        "12-troubleshooting"
+      ],
+      "any_of": [
+        [
+          "three",
+          "3"
+        ]
+      ],
+      "first_answered": true,
+      "runs": [
+        {
+          "standalone": "How many retry attempts does InvoiceFlow make when reading a file fails?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "InvoiceFlow automatically tries up to three attempts in total.",
+            "cited": [
+              "03-invoice-statuses#2",
+              "12-troubleshooting#1"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "InvoiceFlow tries again automatically up to three attempts in total when reading a file fails.",
+            "cited": [
+              "03-invoice-statuses#2",
+              "12-troubleshooting#1"
+            ]
+          }
+        },
+        {
+          "standalone": "How many retry attempts does InvoiceFlow make when reading a file fails?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "InvoiceFlow tries again automatically, up to three attempts in total.",
+            "cited": [
+              "03-invoice-statuses#2",
+              "12-troubleshooting#1"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "InvoiceFlow tries again automatically up to three attempts in total when reading a file fails.",
+            "cited": [
+              "03-invoice-statuses#2",
+              "12-troubleshooting#1"
+            ]
+          }
+        },
+        {
+          "standalone": "How many retry attempts does InvoiceFlow make when reading a file fails?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "InvoiceFlow tries again automatically up to three attempts in total.",
+            "cited": [
+              "03-invoice-statuses#2",
+              "12-troubleshooting#1"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "InvoiceFlow makes up to three automatic retry attempts when reading a file fails.",
+            "cited": [
+              "03-invoice-statuses#2",
+              "12-troubleshooting#1"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F11",
+      "first": "How does duplicate detection work?",
+      "followup": "And does it compare with other users' invoices?",
+      "answerable": true,
+      "gold_docs": [
+        "06-duplicates"
+      ],
+      "any_of": [
+        [
+          "never",
+          "only",
+          "own",
+          "not"
+        ]
+      ],
+      "first_answered": true,
+      "runs": [
+        {
+          "standalone": "Does InvoiceFlow duplicate detection compare with other users' invoices?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, duplicates are only looked for among your own invoices and are never compared with other users' invoices.",
+            "cited": [
+              "06-duplicates#3"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, duplicates are only looked for among your own invoices and are never compared with other users' invoices.",
+            "cited": [
+              "06-duplicates#3"
+            ]
+          }
+        },
+        {
+          "standalone": "Does InvoiceFlow compare duplicate detection with other users' invoices?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, duplicates are only looked for among your own invoices, and other users' invoices are never compared with yours.",
+            "cited": [
+              "06-duplicates#3"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, duplicates are only looked for among your own invoices and are never compared with other users' invoices.",
+            "cited": [
+              "06-duplicates#3"
+            ]
+          }
+        },
+        {
+          "standalone": "Does InvoiceFlow duplicate detection compare with other users' invoices?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, duplicates are only looked for among your own invoices, and other users' invoices are never compared with yours.",
+            "cited": [
+              "06-duplicates#3"
+            ]
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": true,
+            "answer": "No, duplicate detection only looks for duplicates among your own invoices and never compares them with other users' invoices.",
+            "cited": [
+              "06-duplicates#3"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "F12",
+      "first": "How big can an uploaded file be?",
+      "followup": "Can I pay for a higher limit?",
+      "answerable": false,
+      "gold_docs": [],
+      "any_of": [],
+      "first_answered": true,
+      "runs": [
+        {
+          "standalone": "Can I pay for a higher file upload limit?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          }
+        },
+        {
+          "standalone": "Can I pay for a higher upload file size limit?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          }
+        },
+        {
+          "standalone": "Can I pay for a higher file upload limit?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "F13",
+      "first": "What file types can I upload?",
+      "followup": "Does it work with Arabic invoices?",
+      "answerable": false,
+      "gold_docs": [],
+      "any_of": [],
+      "first_answered": true,
+      "runs": [
+        {
+          "standalone": "Does InvoiceFlow work with Arabic invoices?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          }
+        },
+        {
+          "standalone": "Does InvoiceFlow work with Arabic invoices?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          }
+        },
+        {
+          "standalone": "Does InvoiceFlow work with Arabic invoices?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "F14",
+      "first": "How do I export my data?",
+      "followup": "Can I schedule that to run every week?",
+      "answerable": false,
+      "gold_docs": [],
+      "any_of": [],
+      "first_answered": true,
+      "runs": [
+        {
+          "standalone": "Can I schedule the invoice export to run every week?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          }
+        },
+        {
+          "standalone": "Can I schedule the invoice export to run every week?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          }
+        },
+        {
+          "standalone": "Can I schedule data exports to run every week?",
+          "without_rewriting": {
+            "ok": true,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          },
+          "with_rewriting": {
+            "ok": true,
+            "answered": false,
+            "answer": "I couldn't find that in the help articles, so I don't want to guess. Try rephrasing your question, or contact support.",
+            "cited": []
+          }
+        }
+      ]
+    }
+  ],
+  "without_rewriting": {
+    "answerable_ok": 30,
+    "answerable_total": 33,
+    "out_of_scope_ok": 9,
+    "out_of_scope_total": 9
+  },
+  "with_rewriting": {
+    "answerable_ok": 32,
+    "answerable_total": 33,
+    "out_of_scope_ok": 9,
+    "out_of_scope_total": 9
+  }
+}

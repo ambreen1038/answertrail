@@ -98,6 +98,43 @@ export const ArrowIcon = (p: P) => (
     <path d="M5 12h14M13 6l6 6-6 6" />
   </Svg>
 );
+export const ThumbUpIcon = (p: P) => (
+  <Svg {...p}>
+    <path d="M7 11v9H4v-9h3ZM7 11l4-8a2.5 2.5 0 0 1 2.5 2.7L13 9h5.5a2 2 0 0 1 2 2.3l-1.2 7a2 2 0 0 1-2 1.7H7" />
+  </Svg>
+);
+export const ThumbDownIcon = (p: P) => (
+  <Svg {...p}>
+    <path d="M17 13V4h3v9h-3ZM17 13l-4 8a2.5 2.5 0 0 1-2.5-2.7L11 15H5.5a2 2 0 0 1-2-2.3l1.2-7A2 2 0 0 1 6.7 4H17" />
+  </Svg>
+);
+export const PlusIcon = (p: P) => (
+  <Svg {...p}>
+    <path d="M12 5v14M5 12h14" />
+  </Svg>
+);
+export const TrashIcon = (p: P) => (
+  <Svg {...p}>
+    <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
+  </Svg>
+);
+export const InsightIcon = (p: P) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 2" />
+  </Svg>
+);
+export const UserIcon = (p: P) => (
+  <Svg {...p}>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 21a8 8 0 0 1 16 0" />
+  </Svg>
+);
+export const SparkIcon = (p: P) => (
+  <Svg {...p}>
+    <path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6" />
+  </Svg>
+);
 export const HomeIcon = (p: P) => (
   <Svg {...p}>
     <path d="m3 11 9-8 9 8M5 10v10h14V10" />

@@ -78,7 +78,7 @@ def ask(
 
     hits = retrieve(question, settings.top_k)
     retrieved = [_cite(h) for h in hits]
-    top = hits[0].score if hits else 0.0
+    top = max((h.score for h in hits), default=0.0)  # best cosine similarity, whatever order hybrid search put them in
 
     def done(answered, answer, reason, citations=None) -> Result:
         return Result(
@@ -109,4 +109,35 @@ def ask(
 
 def _default_retrieve(question: str, k: int) -> list[store.Hit]:
     vec = embed_texts([question], "RETRIEVAL_QUERY")[0]
-    return store.search(vec, k)
+    return store.search(vec, k, question)
+
+
+REWRITE_SYSTEM = (
+    "You rewrite a customer's latest message into one standalone question for searching a help center. "
+    "Use the earlier conversation only to resolve references such as 'it', 'that', 'those' or 'what about PDFs?'. "
+    "Do not answer the question. Do not add facts or details that are not in the conversation. "
+    "If the latest message already makes sense on its own, return it unchanged. Keep it under 200 characters."
+)
+REWRITE_SCHEMA = {
+    "type": "OBJECT",
+    "properties": {"standalone": {"type": "STRING"}},
+    "required": ["standalone"],
+}
+
+
+def rewrite_question(
+    history: list[dict[str, str]],
+    question: str,
+    generate_fn: Callable[[str, str, dict], dict] | None = None,
+) -> str:
+    """Turn a follow-up into a standalone question, using the last few turns. With no history there
+    is nothing to resolve, so the question is returned untouched and no AI call is made."""
+    if not history:
+        return question
+    lines = [
+        f"{'Customer' if m['role'] == 'user' else 'Assistant'}: {m['content'][:300]}" for m in history[-6:]
+    ]
+    prompt = "Conversation so far:\n" + "\n".join(lines) + f"\n\nLatest customer message: {question}"
+    out =(generate_fn or generate_json)(REWRITE_SYSTEM, prompt, REWRITE_SCHEMA)
+    text = str(out.get("standalone", "")).strip()
+    return text[:300] if text else question

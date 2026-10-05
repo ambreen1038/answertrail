@@ -1,35 +1,55 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ReactNode, useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { ReactNode, Suspense, useEffect, useState } from "react";
+import { useAccount } from "./AccountProvider";
 import Brand from "./Brand";
-import { ChartIcon, ChatIcon, CloseIcon, FilesIcon, GithubIcon, HomeIcon, LockIcon, MenuIcon } from "./Icons";
-import { REPO_URL } from "@/lib/site";
+import { ChartIcon, ChatIcon, CloseIcon, FilesIcon, HomeIcon, InsightIcon, LockIcon, MenuIcon, UserIcon } from "./Icons";
+import RecentChats from "./RecentChats";
+import { apiFetch } from "@/lib/api";
+import { setServerChats } from "@/lib/history";
 import { getSupabase } from "@/lib/supabase";
 
 const MAIN = [
   { href: "/chat", label: "Ask the assistant", icon: ChatIcon },
   { href: "/evaluation", label: "Evaluation", icon: ChartIcon },
 ];
-const ADMIN = [{ href: "/admin", label: "Documents", icon: FilesIcon }];
+const ADMIN = [
+  { href: "/admin", label: "Documents", icon: FilesIcon },
+  { href: "/admin/analytics", label: "Analytics", icon: InsightIcon },
+];
 
 /** The app frame: a top bar, a side navbar, and the page. On phones the sidebar is a drawer. */
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [signedIn, setSignedIn] = useState(false);
+  const router = useRouter();
+  const account = useAccount();
   const close = () => setOpen(false);
 
-  // Customers should not see a back office they can't use. The Admin section appears only once
-  // someone is signed in (sign-ups are disabled, so a signed-in user is an administrator).
-  useEffect(() => {
-    const supabase = getSupabase();
-    if (!supabase) return;
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => setSignedIn(!!session));
-    return () => data.subscription.unsubscribe();
-  }, []);
-  const showAdmin = signedIn || pathname === "/admin";
+  // Customers should not see a back office they can't use. The Admin section appears only when the
+  // SERVER says this account is an administrator (being signed in is not enough: anyone can sign up).
+  const showAdmin = account.isAdmin;
+
+  async function signOut() {
+    close();
+    await getSupabase()?.auth.signOut();
+    router.push("/chat?new=1");
+  }
+
+  async function deleteAllChats() {
+    if (!window.confirm("Delete all of your chats? Their questions and answers will be removed permanently.")) return;
+    close();
+    try {
+      const res = await apiFetch("/api/me/conversations", { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      setServerChats([]);
+      router.push("/chat?new=1");
+    } catch {
+      window.alert("Couldn't delete your chats. Please try again.");
+    }
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -60,9 +80,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
         <Link href="/" className="top-link">
           Home
         </Link>
-        <a className="icon-link" href={REPO_URL} target="_blank" rel="noopener noreferrer" aria-label="Source code on GitHub">
-          <GithubIcon />
-        </a>
       </header>
 
       <div className="app-body">
@@ -74,6 +91,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
           <nav aria-label="App">
             <div className="side-label">Assistant</div>
             {MAIN.map(item)}
+            <Suspense fallback={null}>
+              <RecentChats onNavigate={close} />
+            </Suspense>
             {showAdmin && (
               <>
                 <div className="side-label">
@@ -88,9 +108,27 @@ export default function AppShell({ children }: { children: ReactNode }) {
               <HomeIcon size={18} />
               Back to home
             </Link>
-            {!showAdmin && (
-              <Link href="/admin" className="side-quiet" onClick={close}>
-                Admin sign-in
+            {account.signedIn ? (
+              <div className="account">
+                <div className="account-name" title={account.name ?? account.email ?? undefined}>
+                  {account.name ?? account.email}
+                </div>
+                {account.name && (
+                  <div className="account-email" title={account.email ?? undefined}>
+                    {account.email}
+                  </div>
+                )}
+                <button className="link" onClick={() => void signOut()}>
+                  Sign out
+                </button>
+                <button className="link subtle" onClick={() => void deleteAllChats()}>
+                  Delete all my chats
+                </button>
+              </div>
+            ) : (
+              <Link href="/login" className="side-link" onClick={close}>
+                <UserIcon size={18} />
+                Sign in
               </Link>
             )}
           </div>

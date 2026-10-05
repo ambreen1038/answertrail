@@ -9,6 +9,7 @@ handshake and authentication, about 2 s from Lahore to a Sydney-hosted Supabase)
 new connection about the `vector` type costs several more round trips. Doing that per question made
 every answer take ~9 s; reusing connections brings the database part down to ~0.4 s.
 """
+import re
 import threading
 from dataclasses import dataclass
 from datetime import datetime
@@ -116,6 +117,65 @@ def init_schema() -> None:
             )
             """
         )
+        # Keyword index for hybrid search: a full-text vector kept in sync by Postgres itself (a
+        # generated column), so nothing in the ingestion code has to remember to fill it in.
+        conn.execute(
+            "ALTER TABLE chunks ADD COLUMN IF NOT EXISTS tsv tsvector "
+            "GENERATED ALWAYS AS (to_tsvector('english', heading || ' ' || content)) STORED"
+        )
+        conn.execute("CREATE INDEX IF NOT EXISTS chunks_tsv_idx ON chunks USING gin (tsv)")
+        # Chat history, feedback and (via the messages table) the question log. A conversation is
+        # either anonymous (user_id is NULL: its random UUID is the only key to it) or owned by a
+        # signed-in customer (user_id = their Supabase auth user id; only they can open it). No IP
+        # addresses are stored. user_id deliberately has no foreign key: the auth schema belongs to
+        # Supabase and is not something this app should depend on.
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS conversations (
+                id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+                title text NOT NULL DEFAULT '',
+                created_at timestamptz NOT NULL DEFAULT now(),
+                updated_at timestamptz NOT NULL DEFAULT now()
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS messages (
+                id bigserial PRIMARY KEY,
+                conversation_id uuid NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+                role text NOT NULL CHECK (role IN ('user', 'assistant')),
+                content text NOT NULL,
+                question text,            -- assistant rows: the visitor's original question
+                rewritten_query text,     -- assistant rows: the standalone question searched, if rewritten
+                answered boolean,
+                reason text,
+                citations jsonb,
+                top_score real,
+                latency_ms integer,
+                created_at timestamptz NOT NULL DEFAULT now()
+            )
+            """
+        )
+        conn.execute("ALTER TABLE conversations ADD COLUMN IF NOT EXISTS user_id uuid")
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS conversations_user_idx ON conversations (user_id, updated_at DESC) "
+            "WHERE user_id IS NOT NULL"
+        )
+        conn.execute("CREATE INDEX IF NOT EXISTS messages_conversation_idx ON messages (conversation_id, id)")
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS messages_assistant_created_idx ON messages (created_at) WHERE role = 'assistant'"
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS feedback (
+                message_id bigint PRIMARY KEY REFERENCES messages(id) ON DELETE CASCADE,
+                rating smallint NOT NULL CHECK (rating IN (-1, 1)),
+                comment text,
+                created_at timestamptz NOT NULL DEFAULT now()
+            )
+            """
+        )
         # SECURITY. On Supabase every table in the public schema is automatically exposed through
         # a REST API that anyone holding the (public) anon key can call. Without the lines below,
         # a stranger could read, edit or delete these tables directly and bypass the admin login.
@@ -123,8 +183,8 @@ def init_schema() -> None:
         #      connects as the table owner (postgres), which is not subject to it.
         #   2. Also revoke the API roles' table privileges, as a second independent layer.
         # Harmless on a plain local Postgres, which has neither role.
-        conn.execute("ALTER TABLE documents ENABLE ROW LEVEL SECURITY")
-        conn.execute("ALTER TABLE chunks ENABLE ROW LEVEL SECURITY")
+        for table in ("documents", "chunks", "conversations", "messages", "feedback"):
+            conn.execute(f"ALTER TABLE {table} ENABLE ROW LEVEL SECURITY")
         conn.execute(
             """
             DO $$
@@ -132,7 +192,8 @@ def init_schema() -> None:
             BEGIN
                 FOREACH r IN ARRAY ARRAY['anon', 'authenticated'] LOOP
                     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = r) THEN
-                        EXECUTE format('REVOKE ALL ON TABLE documents, chunks FROM %I', r);
+                        EXECUTE format('REVOKE ALL ON TABLE documents, chunks, conversations, messages, feedback FROM %I', r);
+                        EXECUTE format('REVOKE ALL ON SEQUENCE documents_id_seq, messages_id_seq FROM %I', r);
                     END IF;
                 END LOOP;
             END $$
@@ -214,14 +275,72 @@ class Hit:
     score: float  # cosine similarity, higher is closer
 
 
-def search(query_embedding: np.ndarray, k: int) -> list[Hit]:
-    # No ANN index on purpose: at this size an exact scan is instant and has perfect recall.
-    # Add an HNSW index (vector_cosine_ops) once the corpus is large enough for it to matter.
+_WORD = re.compile(r"[a-z0-9]+")
+
+
+def keyword_words(text: str) -> list[str]:
+    """The distinct lowercase words of a question, for the keyword ranking. Only letters and digits
+    survive, so nothing the visitor types can be read as query syntax. (Stop words such as "how" or
+    "the" are dropped later by Postgres, and over-common words by the rarity filter in search().)"""
+    return list(dict.fromkeys(_WORD.findall(text.lower())))
+
+
+def search(query_embedding: np.ndarray, k: int, query_text: str | None = None) -> list[Hit]:
+    """The k best chunks for a question.
+
+    Vector search alone (query_text=None) ranks by meaning. With query_text and hybrid search on, a
+    second ranking by keyword match is merged in with reciprocal rank fusion: each chunk scores
+    1/(60+rank) in every list it appears in, and the scores add up. A chunk that both rankings like
+    wins; a chunk holding an exact rare word that the embedding blurred can still make it in.
+
+    The keyword ranking is deliberately conservative, because a measured naive version made results
+    worse: it only uses DISTINCTIVE words (in at most `hybrid_max_term_share` of the chunks) and, by
+    default, only counts a chunk that contains ALL of them. Common words match almost everything, and
+    "any rare word" matches junk on a small corpus. If nothing qualifies, the result is exactly the
+    vector ranking.
+
+    Either way `score` stays the cosine similarity, which is what the refusal gate and the UI use.
+
+    No ANN index on purpose: at this size an exact scan is instant and has perfect recall. Add an
+    HNSW index (vector_cosine_ops) once the corpus is large enough for it to matter.
+    """
+    words = keyword_words(query_text) if (query_text and settings.hybrid_search) else []
+    if not words:
+        rows = _run(
+            lambda conn: conn.execute(
+                "SELECT id, doc_slug, doc_title, heading, content, 1 - (embedding <=> %s) AS score "
+                "FROM chunks ORDER BY embedding <=> %s LIMIT %s",
+                (query_embedding, query_embedding, k),
+            ).fetchall()
+        )
+        return [Hit(*r[:5], float(r[5])) for r in rows]
+
+    n = max(settings.hybrid_candidates, k)
     rows = _run(
         lambda conn: conn.execute(
-            "SELECT id, doc_slug, doc_title, heading, content, 1 - (embedding <=> %s) AS score "
-            "FROM chunks ORDER BY embedding <=> %s LIMIT %s",
-            (query_embedding, query_embedding, k),
+            """
+            WITH terms AS (  -- how many chunks contain each word (0 for stop words)
+                SELECT w, (SELECT count(*) FROM chunks WHERE tsv @@ to_tsquery('english', w)) AS df
+                FROM unnest(%(words)s::text[]) AS w
+            ), kwq AS (      -- keep only the distinctive words
+                SELECT to_tsquery('english', string_agg(w, %(sep)s)) AS q FROM terms
+                WHERE df > 0 AND df <= %(share)s * (SELECT count(*) FROM chunks)
+            ), vec AS (
+                SELECT id, row_number() OVER (ORDER BY embedding <=> %(e)s) AS r
+                FROM chunks ORDER BY embedding <=> %(e)s LIMIT %(n)s
+            ), kw AS (
+                SELECT c.id, row_number() OVER (ORDER BY ts_rank_cd(c.tsv, kwq.q) DESC, c.id) AS r
+                FROM chunks c, kwq WHERE kwq.q IS NOT NULL AND c.tsv @@ kwq.q
+                ORDER BY ts_rank_cd(c.tsv, kwq.q) DESC, c.id LIMIT %(n)s
+            ), fused AS (
+                SELECT id, sum(1.0 / (%(rrf)s + r)) AS rrf FROM (SELECT * FROM vec UNION ALL SELECT * FROM kw) t GROUP BY id
+            )
+            SELECT c.id, c.doc_slug, c.doc_title, c.heading, c.content, 1 - (c.embedding <=> %(e)s) AS score
+            FROM fused f JOIN chunks c ON c.id = f.id
+            ORDER BY f.rrf DESC, score DESC, c.id LIMIT %(k)s
+            """,
+            {"e": query_embedding, "n": n, "words": words, "share": settings.hybrid_max_term_share,
+             "sep": " & " if settings.hybrid_match_all else " | ", "rrf": settings.rrf_k, "k": k},
         ).fetchall()
     )
     return [Hit(*r[:5], float(r[5])) for r in rows]

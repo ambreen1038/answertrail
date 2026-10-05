@@ -22,7 +22,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
             <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
               GitHub
             </a>
-            <Link href="/admin">Admin</Link>
+            <Link href="/privacy">Privacy</Link>
           </nav>
         </div>
       </footer>

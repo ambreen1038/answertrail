@@ -1,6 +1,10 @@
 "use client";
 
 import { CSSProperties, useEffect, useState } from "react";
+import CountUp from "@/components/CountUp";
+import { BanIcon, ChatIcon, SearchIcon, ShieldIcon } from "@/components/Icons";
+import { Kpi } from "@/components/Kpi";
+import PageHero from "@/components/PageHero";
 import { EvalQuestion, EvalReport, Outcome, fetchEvaluation } from "@/lib/evaluation";
 
 const OUTCOME: Record<Outcome, string> = {
@@ -34,17 +38,24 @@ export default function Evaluation() {
 
   return (
     <div className="page wide">
-      <h1 className="page-title">Evaluation</h1>
-      <p className="page-sub">
-        How well the assistant answers when it should, and refuses when it should. Everything on this page is read
-        from the real results file written by the evaluation script.
-      </p>
+      <PageHero
+        eyebrow="Measured, not claimed"
+        title="Evaluation"
+        subtitle="How well the assistant answers when it should, and refuses when it should. Everything on this page is read from the real results file written by the evaluation script."
+      />
 
       {report === undefined && (
-        <div className="split-grid" aria-busy="true" aria-label="Loading results">
+        <div aria-busy="true" aria-label="Loading results" role="status">
+          <div className="kpis">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="kpi skeleton" style={{ height: 128 }} />
+            ))}
+          </div>
+          <div className="split-grid">
           {[0, 1, 2].map((i) => (
             <div key={i} className="split-card skeleton" style={{ height: 250 }} />
           ))}
+          </div>
         </div>
       )}
       {report === null && (
@@ -70,8 +81,28 @@ function Results({
 }) {
   const rows = report.questions.filter((q) => (filter === "all" || q.split === filter) && (!missesOnly || !q.passed));
 
+  const test = report.splits.test;
+  const invented = report.splits.dev.hallucinated_answers + test.hallucinated_answers + report.splits.hard.hallucinated_answers;
+  const unanswerable = report.splits.dev.n_unanswerable + test.n_unanswerable + report.splits.hard.n_unanswerable;
+  const pct = (a: number, b: number) => (b ? (a / b) * 100 : null);
+
   return (
     <>
+      <div className="kpis">
+        <Kpi icon={<ChatIcon size={18} />} label="Correct answers" sub="held-out test split" ring={pct(test.correct_answers, test.n_answerable)}>
+          <CountUp value={test.correct_answers} />/{test.n_answerable}
+        </Kpi>
+        <Kpi icon={<ShieldIcon size={18} />} label="Correct refusals" sub="held-out test split" delay={80} ring={pct(test.correct_refusals, test.n_unanswerable)}>
+          <CountUp value={test.correct_refusals} />/{test.n_unanswerable}
+        </Kpi>
+        <Kpi icon={<BanIcon size={18} />} label="Invented answers" sub="across all three splits" delay={160} ring={pct(unanswerable - invented, unanswerable)}>
+          <CountUp value={invented} />/{unanswerable}
+        </Kpi>
+        <Kpi icon={<SearchIcon size={18} />} label={`Right article in top ${report.top_k}`} sub="held-out test split" delay={240} ring={pct(test.retrieval_hit_at_k, test.n_answerable)}>
+          <CountUp value={test.retrieval_hit_at_k} />/{test.n_answerable}
+        </Kpi>
+      </div>
+
       <div className="eval-meta">
         <span>Model: {report.gen_model}</span>
         <span>Embeddings: {report.embed_model}</span>
@@ -88,6 +119,13 @@ function Results({
             <section key={k} className={`split-card${k === "test" ? " headline" : ""}`} style={{ "--i": idx } as CSSProperties}>
               <h2>{SPLIT_INFO[k].title}</h2>
               <p className="split-note">{SPLIT_INFO[k].note}</p>
+              <div
+                className="meter"
+                role="img"
+                aria-label={`${s.correct_answers + s.correct_refusals} of ${s.n_answerable + s.n_unanswerable} behaved correctly`}
+              >
+                <div className="meter-fill" style={{ width: `${((s.correct_answers + s.correct_refusals) / (s.n_answerable + s.n_unanswerable)) * 100}%` }} />
+              </div>
               <dl>
                 <div>
                   <dt>Correct answers</dt>
@@ -177,8 +215,8 @@ function Results({
           <p className="hint">{missesOnly ? "No misses in this selection." : "No questions."}</p>
         ) : (
           <ul className="q-list">
-            {rows.map((q) => (
-              <Row key={q.id} q={q} />
+            {rows.map((q, i) => (
+              <Row key={q.id} q={q} i={i} />
             ))}
           </ul>
         )}
@@ -187,9 +225,9 @@ function Results({
   );
 }
 
-function Row({ q }: { q: EvalQuestion }) {
+function Row({ q, i }: { q: EvalQuestion; i: number }) {
   return (
-    <li>
+    <li style={{ ["--i" as string]: Math.min(i, 14) }}>
       <details className="q">
         <summary>
           <span className="q-id">{q.id}</span>

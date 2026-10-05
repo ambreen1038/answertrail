@@ -142,6 +142,9 @@ def client(monkeypatch):
 
     monkeypatch.setattr(answer, "ask", lambda q: calls.append(q) or Fake())
     monkeypatch.setattr(main.store, "count_chunks", lambda: 58)
+    # the chat log is faked too: without this each successful ask wrote a real conversation row
+    monkeypatch.setattr(main.chatlog, "create_conversation", lambda title, uid=None: "11111111-1111-1111-1111-111111111111")
+    monkeypatch.setattr(main.chatlog, "add_turn", lambda *a: 1)
     c = TestClient(main.app)
     c.calls = calls
     return c

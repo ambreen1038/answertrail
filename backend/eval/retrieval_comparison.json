@@ -1,0 +1,68 @@
+{
+  "top_k": 5,
+  "hybrid_candidates": 20,
+  "rrf_k": 60,
+  "hybrid_max_term_share": 0.1,
+  "sets": {
+    "questions": {
+      "vector_only": {
+        "n": 40,
+        "hit_at_5": 40,
+        "hit_at_1": 37,
+        "mrr": 0.958,
+        "relevant_share_of_top5": 0.59
+      },
+      "hybrid_naive": {
+        "n": 40,
+        "hit_at_5": 40,
+        "hit_at_1": 37,
+        "mrr": 0.958,
+        "relevant_share_of_top5": 0.49
+      },
+      "hybrid_distinctive_any": {
+        "n": 40,
+        "hit_at_5": 40,
+        "hit_at_1": 36,
+        "mrr": 0.95,
+        "relevant_share_of_top5": 0.5
+      },
+      "hybrid_distinctive_all": {
+        "n": 40,
+        "hit_at_5": 40,
+        "hit_at_1": 36,
+        "mrr": 0.95,
+        "relevant_share_of_top5": 0.55
+      }
+    },
+    "keyword_queries": {
+      "vector_only": {
+        "n": 14,
+        "hit_at_5": 14,
+        "hit_at_1": 13,
+        "mrr": 0.964,
+        "relevant_share_of_top5": 0.486
+      },
+      "hybrid_naive": {
+        "n": 14,
+        "hit_at_5": 14,
+        "hit_at_1": 13,
+        "mrr": 0.964,
+        "relevant_share_of_top5": 0.471
+      },
+      "hybrid_distinctive_any": {
+        "n": 14,
+        "hit_at_5": 14,
+        "hit_at_1": 13,
+        "mrr": 0.964,
+        "relevant_share_of_top5": 0.486
+      },
+      "hybrid_distinctive_all": {
+        "n": 14,
+        "hit_at_5": 14,
+        "hit_at_1": 13,
+        "mrr": 0.964,
+        "relevant_share_of_top5": 0.486
+      }
+    }
+  }
+}

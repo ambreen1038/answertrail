@@ -1,0 +1,14 @@
+{"id": "F01", "first": "How big can an uploaded file be?", "followup": "What happens if it's bigger?", "answerable": true, "gold_docs": ["02-uploading-files"], "any_of": [["reject"]]}
+{"id": "F02", "first": "What file types can I upload?", "followup": "Is that checked by the name only?", "answerable": true, "gold_docs": ["02-uploading-files", "11-privacy-and-security"], "any_of": [["content"]]}
+{"id": "F03", "first": "What does the Needs review status mean?", "followup": "And what does Failed mean?", "answerable": true, "gold_docs": ["03-invoice-statuses"], "any_of": [["read", "retr", "attempt"]]}
+{"id": "F04", "first": "How does duplicate detection work?", "followup": "Does it delete them automatically?", "answerable": true, "gold_docs": ["06-duplicates"], "any_of": [["not", "no ", "nothing"], ["flag", "review", "decide", "compare"]]}
+{"id": "F05", "first": "Can I export my invoices?", "followup": "Does that include the ones still needing review?", "answerable": true, "gold_docs": ["07-exporting-data"], "any_of": [["approved"]]}
+{"id": "F06", "first": "Can I delete several invoices at once?", "followup": "Can I get them back afterwards?", "answerable": true, "gold_docs": ["08-deleting-invoices"], "any_of": [["cannot", "can't", "can not", "permanent", "not be recovered", "unrecover"]]}
+{"id": "F07", "first": "I forgot my password. What do I do?", "followup": "The email never arrived. What now?", "answerable": true, "gold_docs": ["09-account-and-passwords"], "any_of": [["spam"]]}
+{"id": "F08", "first": "How many pages of a PDF are read?", "followup": "How do I deal with that for a long invoice?", "answerable": true, "gold_docs": ["02-uploading-files", "12-troubleshooting"], "any_of": [["split", "check the totals", "review"]]}
+{"id": "F09", "first": "What does the line item check do?", "followup": "What about the totals?", "answerable": true, "gold_docs": ["04-automatic-checks"], "any_of": [["subtotal"]]}
+{"id": "F10", "first": "What happens if reading a file fails?", "followup": "How many attempts is that?", "answerable": true, "gold_docs": ["03-invoice-statuses", "12-troubleshooting"], "any_of": [["three", "3"]]}
+{"id": "F11", "first": "How does duplicate detection work?", "followup": "And does it compare with other users' invoices?", "answerable": true, "gold_docs": ["06-duplicates"], "any_of": [["never", "only", "own", "not"]]}
+{"id": "F12", "first": "How big can an uploaded file be?", "followup": "Can I pay for a higher limit?", "answerable": false, "gold_docs": [], "any_of": []}
+{"id": "F13", "first": "What file types can I upload?", "followup": "Does it work with Arabic invoices?", "answerable": false, "gold_docs": [], "any_of": []}
+{"id": "F14", "first": "How do I export my data?", "followup": "Can I schedule that to run every week?", "answerable": false, "gold_docs": [], "any_of": []}

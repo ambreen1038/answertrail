@@ -11,8 +11,10 @@ product (the product name is a setting). The demo knowledge base is a help cente
 [InvoiceFlow](https://github.com/ambreen1038/invoiceflow), my AI invoice processing app. This is a
 separate project from InvoiceFlow and shares no code with it.
 
-> Status: landing page, customer chat, public evaluation page, document upload, admin login (Supabase),
-> rate limiting and tests are done. Deployment is next; there is no live demo yet.
+> Status: landing page, customer chat with saved conversations and follow-up questions, optional customer
+> accounts, answer feedback, admin analytics, public evaluation page, document upload, admin login (Supabase),
+> hybrid search (built, measured, off by default), rate limiting and tests are done. Deployment is next; there
+> is no live demo yet.
 
 ## Why this exists
 
@@ -48,14 +50,66 @@ because an uncited answer is indistinguishable from an invented one.
 | Page | Who | What it is |
 |---|---|---|
 | `/` | everyone | Landing page: what it does, how it works, and live evaluation numbers |
-| `/chat` | everyone | The assistant: cited answers, or a clear "not in the help articles" |
+| `/chat` | everyone | The assistant: cited answers, or a clear "not in the help articles". Remembers the conversation, so follow-ups work; thumbs up/down on every answer |
 | `/evaluation` | everyone | Every test question with its outcome, per-split results, and the limits of the evaluation |
-| `/admin` | administrators | Sign in, then upload and delete documents |
+| `/privacy` | everyone | Plain-language statement of what is stored, who can see it, what is sent to the AI service, and how to delete it |
+| `/login` | everyone | Optional: create an account, sign in, or reset a password (`/reset-password` is where the email link lands) |
+| `/admin` | administrators | Upload and delete documents (sign in at `/login` with an administrator account) |
+| `/admin/analytics` | administrators | What customers ask, how often the articles couldn't answer, and which answers got a thumbs-down |
 
 The landing page has a top navbar; the app pages share a top bar plus a side navbar (a slide-in drawer
 on phones). The numbers on the landing and evaluation pages are never typed in: the backend serves them
 from `backend/eval/results.json` (`GET /api/evaluation`) and recomputes each question's outcome with the
 same grading rules and threshold as the evaluation script, so the pages cannot drift from the real results.
+
+## Conversations, follow-ups and feedback
+
+- **Saved conversations.** Every chat is stored (questions, answers, the sources used). The sidebar
+  shows "Recent chats"; opening one reloads it from the server, and "Delete this chat" removes it
+  permanently. Nothing identifying (no IP address) is stored with a message, and the page tells visitors
+  that questions are saved.
+- **Accounts are optional.** Without an account, a conversation's random id (a UUID in the URL) is its
+  only key, and the browser remembers its own ids in `localStorage`. With a customer account (email and
+  password through Supabase Auth, with email confirmation and password reset), new chats belong to the
+  account: they follow the customer across devices and **only that account can open, rate or delete them**
+  (anyone else, anonymous visitors included, gets "not found"). Chats started before signing in are
+  carried into the account at sign-in; only chats that have no owner can be claimed. While signed in, the
+  chat list is kept in memory only, so signing out of a shared computer leaves nothing behind.
+- **Being signed in is not being an admin.** Anyone can create a customer account, so the admin pages are
+  decided by the server: the account must have a confirmed email on the `ADMIN_EMAILS` allowlist. The
+  browser asks `GET /api/me` and shows the Admin menu only when the server says so.
+- **Follow-up questions.** "What about PDFs with many pages?" means nothing on its own. When a
+  conversation has earlier turns, the latest message is first rewritten into a standalone question using
+  the last few turns ("What is the maximum page limit for uploaded PDF files?") and *that* is what gets
+  searched. The chat shows "Searched for: …" whenever the rewrite changed the question, so it is never
+  hidden. The first question of a chat is never rewritten (no AI call). If the rewrite fails the original
+  question is used; if the chat log is down, the answer is still returned.
+- **Small touches for real visitors.** A copy button on answers; a "waking up" message when the hosting is slow to respond (free hosting
+  sleeps when idle); "Delete this chat" and, when signed in, "Delete all my chats"; a link-preview image and tags for sharing the
+  site on LinkedIn or Upwork (set `NEXT_PUBLIC_SITE_URL` once deployed); and a 90-second limit so a stuck request ends with a clear message.
+- **Feedback.** Thumbs up/down on every answer, with an optional "what was wrong?" on thumbs-down. A
+  rating can only be attached to an assistant reply *inside the conversation it belongs to*, so knowing a
+  message number alone is not enough to rate someone else's chat.
+- **Analytics (admin).** Totals, answered-vs-declined per day, the questions the articles couldn't
+  answer (grouped, most asked first, which is the list of articles to write next) and the answers that
+  got a thumbs-down with their comments.
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/ask` | `{question, conversation_id?}`; returns the answer plus `conversation_id`, `message_id`, `rewritten_query` |
+| `GET /api/conversations/{id}` | reload a conversation (an anonymous one: anyone who holds the id; an owned one: only its owner) |
+| `DELETE /api/conversations/{id}` | delete it, with its messages and feedback (same rule) |
+| `POST /api/conversations/{id}/messages/{mid}/feedback` | `{rating: 1 or -1, comment?}` (same rule) |
+| `GET /api/me` | who the token belongs to and whether they are an admin (needs `Authorization: Bearer <token>`) |
+| `GET /api/me/conversations` | the signed-in customer's chats |
+| `POST /api/me/claim` | `{ids: [...]}` move unowned chats into the account |
+| `DELETE /api/me/conversations` | delete all of the signed-in customer's chats |
+| `GET /api/admin/analytics` | admin only |
+
+A signed-in request is verified by asking Supabase who owns the token (cached for 30 seconds on the
+question path; admin endpoints are never cached). A token that is present but invalid is a 401 rather
+than being silently treated as anonymous, and if Supabase is unreachable a token holder gets a 503
+(anonymous asking keeps working).
 
 ## Adding documents (admin)
 
@@ -90,7 +144,7 @@ Design decisions worth knowing:
   login isn't configured or Supabase is unreachable (it fails closed, never open). The backend holds
   no password and no service-role key.
 - **Row Level Security on every table.** Supabase exposes public-schema tables through a REST API
-  that anyone with the public anon key can call. Both tables have RLS enabled with no policies and
+  that anyone with the public anon key can call. All five tables (documents, chunks, conversations, messages, feedback) have RLS enabled with no policies and
   the `anon`/`authenticated` roles' privileges revoked, so that API cannot read or change documents
   and the admin login can't be bypassed. The backend connects as the table owner, which RLS doesn't
   restrict.
@@ -98,14 +152,26 @@ Design decisions worth knowing:
 ## Supabase setup
 
 1. Create a Supabase project (separate from any other app).
-2. **Authentication -> Sign In / Providers -> Email:** turn **off** "Allow new users to sign up"
-   (this is a single-admin tool) and keep "Confirm email" on.
-3. **Authentication -> Users -> Add user:** create your admin account with "Auto Confirm User" ticked.
-4. Put that email in `ADMIN_EMAILS`; copy the Project URL and anon key into `SUPABASE_URL` /
+2. **Authentication -> Sign In / Providers -> Email:** keep "Confirm email" **on**, turn "Allow new users
+   to sign up" **on** (customers create their own accounts; the admin allowlist is what protects the admin
+   pages), and set the minimum password length to 8.
+3. **Authentication -> URL Configuration:** set the Site URL to the frontend's address
+   (`http://localhost:3000` locally, your real domain once deployed) and add that address, plus
+   `/chat` and `/reset-password` under it, to the Redirect URLs. Confirmation and reset emails link there.
+4. **Authentication -> Users -> Add user:** create your admin account with "Auto Confirm User" ticked.
+5. Put that email in `ADMIN_EMAILS`; copy the Project URL and anon key into `SUPABASE_URL` /
    `SUPABASE_ANON_KEY` (backend) and `NEXT_PUBLIC_SUPABASE_*` (frontend).
-5. **Project Settings -> Database -> Connection string -> Session pooler:** use it as `DATABASE_URL`
+6. **Project Settings -> Database -> Connection string -> Session pooler:** use it as `DATABASE_URL`
    (the direct connection is IPv6-only on the free plan). Then load the knowledge base:
    `python -m app.ingest --reset`. The tables and their security settings are created automatically.
+
+Two things to know before real customers use it: Supabase's built-in email sender is limited to a few
+messages per hour per project, so sign-up and reset emails will be throttled until you configure your own
+SMTP provider; and the free plan pauses a project after a week of inactivity.
+
+Opening sign-ups does not open the database. Customer accounts use the `authenticated` role, which has no
+privileges on any table here (the schema code revokes them and enables Row Level Security with no
+policies), and the backend never holds the service-role key.
 
 ## Rate limiting
 
@@ -201,6 +267,72 @@ Read these as "no failures found on this corpus", not as a general accuracy figu
   The model's own check is what refuses correctly. I keep the gate (default 0.5) only as a cheap
   sanity floor that skips the LLM call when nothing relevant was retrieved at all.
 
+### Hybrid search
+
+Hybrid search merges the usual meaning-based (vector) ranking with a keyword ranking (Postgres full-text
+search) using reciprocal rank fusion. It is implemented and tested, and **switched off by default
+(`HYBRID_SEARCH=true` enables it)** because on this corpus it did not help. Measured with
+[`backend/eval/compare_retrieval.py`](backend/eval/compare_retrieval.py), retrieval only, on the 40
+answerable questions and on 14 short keyword-style queries ("xlsx", "WebP", "1.234,50"):
+
+| Variant | Questions: gold article in top 5 | first chunk correct | share of the top 5 from a correct article | Keyword queries: top 5 / first |
+|---|---|---|---|---|
+| **Vector only (the app)** | 40/40 | 37/40 | 59% | 14/14, 13/14 |
+| Hybrid, any word | 40/40 | 37/40 | 49% | 14/14, 13/14 |
+| Hybrid, any distinctive word | 40/40 | 36/40 | 50% | 14/14, 13/14 |
+| Hybrid, all distinctive words | 40/40 | 36/40 | 55% | 14/14, 13/14 |
+
+What happened, and what it does and doesn't show:
+
+- **The ceiling is the problem.** Vector search already finds a correct article for every question, so
+  there was nothing for a keyword ranking to rescue. The keyword-style queries, where it should have its
+  best chance, did not change at all.
+- **The naive version was worse, and the article-level metric hid it.** Matching on any question word
+  pulled generic chunks into the top 5 (Postgres full-text ranking has no sense of how rare a word is, so
+  "invoice" and "upload" match everything) and pushed relevant chunks out: the top-5 share fell from 59% to
+  49%. In a full 60-question run this version turned one answerable question into a refusal (a
+  troubleshooting chunk was crowded out) and weakened two other answers; that run is kept in
+  `eval/results_hybrid_naive.json`. Those answer-level differences are within the run-to-run variation I
+  describe above, but the one refusal traced directly to the missing chunk.
+- **Filtering to distinctive words and requiring all of them reduced the harm but did not remove it.** I
+  stopped there on purpose. Every extra variant tried on the same 40 questions makes the winner look
+  better than it really is, and I tried three; the table shows all of them, not just the best.
+- **So the published evaluation (`results.json`) is the vector-only system**, which is what runs by default.
+- **When to try it again:** a large corpus, exact identifiers (part numbers, error codes, product names), or
+  a chunk-level labelled set that measures the whole top 5, not only whether one good chunk is present.
+
+### Follow-up questions
+
+A second, smaller evaluation checks the conversation memory: 14 two-turn cases in
+[`backend/eval/followups.jsonl`](backend/eval/followups.jsonl) (11 answerable follow-ups such as "And what
+does Failed mean?", 3 out-of-scope ones such as "Can I pay for a higher limit?"), run by
+`python eval/run_followups.py`. Each follow-up is run twice: searched exactly as typed, and rewritten into
+a standalone question first (what the app does). Each is repeated 3 times because the model varies.
+
+| | Answerable follow-ups correct (11 cases x 3 runs) | Out-of-scope follow-ups declined (3 x 3) |
+|---|---|---|
+| Without rewriting | 30/33 | 9/9 |
+| **With rewriting** | **32/33** | **9/9** |
+
+What this does and doesn't show:
+
+- **The gain is small and concentrated.** Rewriting rescued one case every time ("Does that include the
+  ones still needing review?" is refused as typed, because it never names exports) and made no
+  difference on most others. Many follow-ups already contain enough words to find the right article on
+  a 12-article corpus, so this set can't show how much rewriting would matter on a large one.
+- **Rewriting can hurt.** On "What about the totals?" after a question about the line item check, one
+  run turned it into "What does the line item check do for the totals?", a muddled question that was then
+  refused (a safe failure, but a failure). The other runs rewrote it correctly. The "Searched for: …"
+  line in the chat exists partly so a bad rewrite is visible to the customer.
+- **Out-of-scope follow-ups were never answered**, with or without rewriting.
+- **I corrected my own test once.** In the first run, "Is that checked by the name only?" scored 0/3 without
+  rewriting even though the answer ("checked by their contents, not just their name") was right: it cited
+  the privacy article, which also says so, and I had listed only the uploading article as correct. I added
+  the privacy article to that case and re-ran everything; the first run (27/33 vs 30/33) is kept as
+  `followups_results_run1.json`. Both runs favour rewriting by a small margin; neither is a precise rate.
+- Same limits as above: I wrote the cases, the grader is phrase-based, and 14 cases is a very small sample.
+  The free Gemini quota also returned a few 429s during the runs; the client retried them.
+
 ## Run it locally
 
 Prerequisites: Python 3.10+, Node 20+, Docker, a free Gemini API key
@@ -213,35 +345,40 @@ python -m venv ../.venv && ../.venv/Scripts/pip install -r requirements-dev.txt
 cp ../.env.example .env                      # then fill in GEMINI_API_KEY and the Supabase values
 python -m app.ingest                         # chunk, embed and store the knowledge base
 uvicorn app.main:app --reload                # API on :8000
-python -m pytest                             # 76 offline tests (+3 optional DB integration tests)
+python -m pytest                             # 116 offline tests (+14 optional DB integration tests)
 python -m app.ingest --reset                 # clean state: only kb/ (required before the evaluation)
 python eval/run_eval.py                      # live evaluation (refuses to run if extra documents exist)
 ```
 
 Frontend: `cd frontend && npm install && npm run dev` (set `NEXT_PUBLIC_API_URL` if the API isn't on :8000).
-Chat is at http://localhost:3000 and the admin page at http://localhost:3000/admin.
+Chat is at http://localhost:3000/chat, the admin pages at http://localhost:3000/admin and /admin/analytics.
 
 ## Project layout
 
 ```
 kb/                 12 help articles (the knowledge base)
-backend/app/        config, extraction, chunking, gemini client, pgvector store, ingestion, answer logic, FastAPI app
-backend/eval/       questions, question builder, evaluation runner, results.json
+backend/app/        config, extraction, chunking, gemini client, pgvector store (vector + optional hybrid search), chat log, accounts/auth, ingestion, answer logic, FastAPI app
+backend/eval/       questions, question builder, evaluation runners (answers, follow-ups), results.json
 backend/tests/      offline unit tests
-frontend/           Next.js: landing page, chat, evaluation page and admin, in a shared app shell
+frontend/           Next.js: landing page, chat, evaluation page, admin (documents, analytics), in a shared app shell
 ```
 
 ## Limitations and roadmap
 
 - The knowledge base is synthetic documentation I wrote from how InvoiceFlow actually behaves,
   not a real company's help center.
-- No conversation memory: each question is answered independently.
+- Anonymous chats (no account) can be read by anyone holding the link, and clearing browser data forgets
+  which chats were yours; signing in fixes both. Customer accounts have no profile page, and deleting an
+  account itself needs the Supabase dashboard (the backend deliberately holds no service-role key); the
+  "delete all my chats" endpoint exists but has no button yet.
+- A revoked sign-in token can keep working on the question path for up to 30 seconds (the verification cache).
+- Follow-up handling only looks at the last few turns and was measured on a small set (see below).
 - **The evaluation covers the markdown knowledge base only.** PDF upload is covered by unit tests
   (including generated PDFs, a scanned/no-text PDF and a damaged one) and a manual end-to-end check,
   but retrieval quality on messy real-world PDFs has not been measured.
 - Text-layer PDFs only; no OCR for scanned documents. Page-based chunking can split a fact across pages.
 - Free-tier Supabase projects pause after a week of inactivity.
-- Admin login uses Supabase's default browser session storage; there is a single admin role, no per-user permissions.
+- Sessions use Supabase's default browser storage; there are two roles (customer, and administrator by allowlist), no finer permissions.
 - [ ] Deploy (Vercel + Render + Supabase Postgres with pgvector)
 - [ ] Tool calling with human confirmation before any action (for example, look up an invoice's status)
 - [ ] Evaluate on questions written by someone other than the author

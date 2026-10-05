@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import Brand from "./Brand";
 import { CloseIcon, GithubIcon, MenuIcon } from "./Icons";
+import { useAccount } from "./AccountProvider";
 import { REPO_URL } from "@/lib/site";
 
 const LINKS = [
@@ -15,6 +16,7 @@ const LINKS = [
 
 /** Top navigation for the landing page. On small screens the links fold into a menu. */
 export default function MarketingNav() {
+  const account = useAccount();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const close = () => setOpen(false);
@@ -41,6 +43,11 @@ export default function MarketingNav() {
           <a className="icon-link" href={REPO_URL} target="_blank" rel="noopener noreferrer" aria-label="Source code on GitHub">
             <GithubIcon />
           </a>
+          {account.ready && !account.signedIn && (
+            <Link href="/login" className="top-link">
+              Sign in
+            </Link>
+          )}
           <Link href="/chat" className="btn btn-primary btn-sm">
             Try the demo
           </Link>

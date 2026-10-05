@@ -23,6 +23,20 @@ class Settings(BaseSettings):
     # eval set their top scores overlap (0.67-0.85 vs 0.52-0.74), so the model's own
     # "do the sources answer this?" check does that work. See eval results in the README.
     min_similarity: float = 0.5
+    # Hybrid search: merge the meaning-based (vector) ranking with a keyword (full-text) ranking using
+    # reciprocal rank fusion. OFF by default: on this 58-chunk corpus every variant I measured was no
+    # better than plain vector search and the naive ones were worse (README, "Hybrid search"). It is
+    # worth trying again on a large corpus with exact identifiers such as part numbers or error codes.
+    hybrid_search: bool = False
+    hybrid_candidates: int = 20   # how many results each ranking contributes before merging
+    rrf_k: int = 60               # fusion constant; 60 is the value from the original RRF paper
+    # The keyword ranking only uses words that appear in at most this share of all chunks. Postgres
+    # full-text ranking has no notion of word rarity, so without this, common words ("invoice",
+    # "upload") pull generic chunks into the results and crowd out relevant ones (measured: see README).
+    hybrid_max_term_share: float = 0.10
+    # True: a chunk must contain ALL the distinctive words to count as a keyword match (an exact-term
+    # match, high precision). False: ANY of them is enough, which on a small corpus mostly adds noise.
+    hybrid_match_all: bool = True
     kb_dir: Path = ROOT / "kb"
     eval_results_path: Path = ROOT / "backend" / "eval" / "results.json"
     cors_origins: str = "http://localhost:3000"
