@@ -11,10 +11,13 @@ product (the product name is a setting). The demo knowledge base is a help cente
 [InvoiceFlow](https://github.com/ambreen1038/invoiceflow), my AI invoice processing app. This is a
 separate project from InvoiceFlow and shares no code with it.
 
+**Live demo:** https://answertrail.vercel.app (website on Vercel, API on Render, database and sign-in on Supabase).
+The API is on a free plan that sleeps when idle, so the first question after a quiet period can take up to a minute.
+
 > Status: landing page, customer chat with saved conversations and follow-up questions, optional customer
 > accounts, answer feedback, admin analytics, public evaluation page, document upload, admin login (Supabase),
 > hybrid search (built, measured, off by default), rate limiting and tests are done. Deployment is next; there
-> is no live demo yet.
+> is deployed and running.
 
 ## Why this exists
 
@@ -350,8 +353,10 @@ Three pieces, each on its own free tier: the **database and sign-in** on Supabas
    address and add `<address>/chat` and `<address>/reset-password` to the Redirect URLs.
 4. **Check visitor addresses (important for the rate limits).** Behind Render's proxy the server must read
    each visitor's address from the `X-Forwarded-For` header, counting from the right by the number of trusted
-   proxies (`TRUSTED_PROXY_HOPS`, set to 1 in `render.yaml`; see `backend/app/clientip.py`). I could not confirm
-   Render's exact header layout from its documentation, so check it once: sign in as admin, open the Analytics
+   proxies (`TRUSTED_PROXY_HOPS`; see `backend/app/clientip.py`). I could not confirm Render's exact header layout
+   from its documentation, so it was measured on the live site: the header held three addresses (the visitor, then
+   Cloudflare, then Render's internal proxy), so the correct value is **3**, not 1. With 1 the server saw only
+   Render's internal address, which would have put every visitor under one shared limit. Check it again after any hosting change: sign in as admin, open the Analytics
    page, and look at the **Server check** card at the bottom. "The server sees you as" must be your own public
    IP address (search "what is my IP" to compare). If it shows a Render or Cloudflare address instead, or if
    more than one address is listed in front of yours, change `TRUSTED_PROXY_HOPS` in Render and redeploy.
@@ -415,6 +420,6 @@ frontend/           Next.js: landing page, chat, evaluation page, admin (documen
 - Text-layer PDFs only; no OCR for scanned documents. Page-based chunking can split a fact across pages.
 - Free-tier Supabase projects pause after a week of inactivity.
 - Sessions use Supabase's default browser storage; there are two roles (customer, and administrator by allowlist), no finer permissions.
-- [ ] Deploy (Vercel + Render + Supabase Postgres with pgvector): configuration is ready, see Deployment
+- [x] Deploy (Vercel + Render + Supabase Postgres with pgvector): see Deployment
 - [ ] Tool calling with human confirmation before any action (for example, look up an invoice's status)
 - [ ] Evaluate on questions written by someone other than the author

@@ -23,7 +23,7 @@ services:
         sync: false
       - key: CORS_ORIGINS        # the frontend's address, e.g. https://answertrail.vercel.app
         sync: false
-      - key: TRUSTED_PROXY_HOPS  # verify after deploying with /api/admin/client-info (see README)
-        value: "1"
+      - key: TRUSTED_PROXY_HOPS  # measured on the live site: Render adds three hops (Cloudflare + two internal)
+        value: "3"
       - key: HYBRID_SEARCH
         value: "false"

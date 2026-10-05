@@ -45,6 +45,17 @@ def test_two_trusted_proxies_skip_the_inner_one(monkeypatch):
     assert client_ip(Req("6.6.6.6, 203.0.113.7, 172.70.1.1")) == "203.0.113.7"
 
 
+def test_the_chain_seen_on_render_resolves_to_the_visitor_with_three_hops(monkeypatch):
+    # Real layout measured on the live site: visitor, Cloudflare, Render's internal proxy
+    chain = "198.51.100.7, 104.22.232.158, 10.30.126.74"
+    with_hops(monkeypatch, 1)
+    assert client_ip(Req(chain)) == "10.30.126.74"  # the mistake: everyone would share this internal address
+    with_hops(monkeypatch, 3)
+    assert client_ip(Req(chain)) == "198.51.100.7"
+    # a visitor who forges extra entries on the left still cannot change the result
+    assert client_ip(Req("6.6.6.6, " + chain)) == "198.51.100.7"
+
+
 def test_a_short_or_missing_header_falls_back_to_the_connection(monkeypatch):
     with_hops(monkeypatch, 2)
     assert client_ip(Req("203.0.113.7")) == "10.0.0.9"
