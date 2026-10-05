@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 
 from . import answer, chatlog, documents, evaluation, store
 from .auth import User, current_user, require_admin, require_user
+from .clientip import client_ip, forwarded_chain
 from .ratelimit import RateLimiter
 from .config import settings
 from .extract import ExtractionError
@@ -54,8 +55,7 @@ limiter = RateLimiter.from_settings()
 def rate_limit_ask(request: Request) -> None:
     """Refuse the request with 429 + Retry-After if this visitor (or the whole demo) is over a limit.
     Runs BEFORE any embedding or generation call, so a refused request costs no quota."""
-    client = request.client.host if request.client else "unknown"
-    decision = limiter.check(client)
+    decision = limiter.check(client_ip(request))
     if not decision.allowed:
         raise HTTPException(
             status_code=429,
@@ -191,6 +191,20 @@ def _doc_json(d: store.DocRecord) -> dict:
         "id": d.id, "slug": d.slug, "title": d.title, "filename": d.filename,
         "content_type": d.content_type, "n_chunks": d.n_chunks,
         "created_at": d.created_at.isoformat(), "replaced": d.replaced,
+    }
+
+
+@app.get("/api/admin/client-info", dependencies=[Depends(require_admin)])
+def client_info(request: Request, response: Response):
+    """Deployment check: which address the rate limiter attributes this request to. Open it from your
+    own phone or laptop and compare with your real public IP. If it shows the hosting proxy's address
+    instead, adjust TRUSTED_PROXY_HOPS. (Your own address, shown only to you, an admin.)"""
+    response.headers["Cache-Control"] = "no-store"
+    return {
+        "used_for_rate_limits": client_ip(request),
+        "connection_address": request.client.host if request.client else None,
+        "forwarded_for": forwarded_chain(request),
+        "trusted_proxy_hops": settings.trusted_proxy_hops,
     }
 
 

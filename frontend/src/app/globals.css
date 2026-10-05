@@ -800,3 +800,6 @@ h1, h2, h3 { line-height: 1.15; letter-spacing: -0.02em; }
 .sk-row { border-left-color: var(--border); }
 .sk-row:hover, .sk-doc:hover { transform: none; }
 .sk-doc { gap: 14px; }
+
+.server-check code { background: var(--brand-soft); color: var(--brand-dark); padding: 2px 8px; border-radius: 6px; font-weight: 700; }
+.server-check p { margin-top: 6px; font-size: 14px; }

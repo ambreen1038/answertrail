@@ -9,6 +9,13 @@ import { Kpi } from "@/components/Kpi";
 import { AnalyticsSkeleton } from "@/components/Skeletons";
 import { adminFetch, errorDetail } from "@/lib/adminApi";
 
+type ClientInfo = {
+  used_for_rate_limits: string;
+  connection_address: string | null;
+  forwarded_for: string[];
+  trusted_proxy_hops: number;
+};
+
 type Analytics = {
   totals: {
     questions: number;
@@ -45,6 +52,7 @@ const secs = (ms: number | null) => (ms === null ? "–" : `${(ms / 1000).toFixe
 function Dashboard() {
   const [data, setData] = useState<Analytics | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [client, setClient] = useState<ClientInfo | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -54,6 +62,13 @@ function Dashboard() {
         else setData(await res.json());
       } catch {
         setError("Couldn't reach the server.");
+      }
+      try {
+        // Optional deployment check; the page works without it.
+        const info = await adminFetch("/api/admin/client-info");
+        if (info.ok) setClient(await info.json());
+      } catch {
+        /* ignore */
       }
     })();
   }, []);
@@ -168,6 +183,24 @@ function Dashboard() {
           )}
         </section>
       </div>
+
+      {client && (
+        <section className="panel dash-panel server-check" style={{ animationDelay: "540ms" }}>
+          <div className="dash-panel-head">
+            <strong>Server check</strong>
+            <span className="dash-hint">Used to confirm each visitor gets their own rate limit once the site is online.</span>
+          </div>
+          <p>
+            The server sees you as <code>{client.used_for_rate_limits}</code>. Compare it with your real public address
+            (search &ldquo;what is my IP&rdquo;). On your own computer it will show a local address such as 127.0.0.1;
+            on the live site it must match your real one.
+          </p>
+          <p className="dash-hint">
+            Trusted proxies: {client.trusted_proxy_hops}. Addresses passed along by proxies:{" "}
+            {client.forwarded_for.length ? client.forwarded_for.join(", ") : "none"}.
+          </p>
+        </section>
+      )}
     </>
   );
 }

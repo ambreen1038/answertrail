@@ -333,6 +333,42 @@ What this does and doesn't show:
 - Same limits as above: I wrote the cases, the grader is phrase-based, and 14 cases is a very small sample.
   The free Gemini quota also returned a few 429s during the runs; the client retried them.
 
+## Deployment
+
+Three pieces, each on its own free tier: the **database and sign-in** on Supabase (already there), the
+**backend API** on Render, and the **website** on Vercel.
+
+1. **Backend on Render.** Create a new Blueprint from this repository; it reads [`render.yaml`](render.yaml)
+   (Python 3.12, Singapore region, health check `/api/health`). Render asks for the secrets one by one:
+   `DATABASE_URL` (Supabase session-pooler string), `GEMINI_API_KEY`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
+   `ADMIN_EMAILS` and `CORS_ORIGINS` (the website's address; set it after step 2, then redeploy). Never use
+   the Supabase service-role key; this project does not need it.
+2. **Website on Vercel.** Import the repository and set the **Root Directory** to `frontend`. Environment
+   variables: `NEXT_PUBLIC_API_URL` (the Render address), `NEXT_PUBLIC_SUPABASE_URL`,
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL` (the website's own address, for link previews).
+3. **Tell Supabase the real address.** Authentication, URL Configuration: set the Site URL to the website's
+   address and add `<address>/chat` and `<address>/reset-password` to the Redirect URLs.
+4. **Check visitor addresses (important for the rate limits).** Behind Render's proxy the server must read
+   each visitor's address from the `X-Forwarded-For` header, counting from the right by the number of trusted
+   proxies (`TRUSTED_PROXY_HOPS`, set to 1 in `render.yaml`; see `backend/app/clientip.py`). I could not confirm
+   Render's exact header layout from its documentation, so check it once: sign in as admin, open the Analytics
+   page, and look at the **Server check** card at the bottom. "The server sees you as" must be your own public
+   IP address (search "what is my IP" to compare). If it shows a Render or Cloudflare address instead, or if
+   more than one address is listed in front of yours, change `TRUSTED_PROXY_HOPS` in Render and redeploy.
+   Without this, every visitor could end up sharing one rate limit.
+5. **Smoke test.** Ask a question on the live site; sign in as admin; create and delete a test chat; request a
+   password reset; open the Evaluation and Privacy pages.
+
+Things that will behave differently from a laptop:
+
+- **Cold starts.** Render's free plan puts the API to sleep after 15 minutes without traffic, and waking it
+  takes about a minute. The chat shows a "server is waking up" message after 6 seconds instead of looking broken.
+- **Hours.** The free plan gives 750 instance hours a month and the service is suspended after that.
+- **Rate limits are in memory** and reset whenever the server restarts or wakes up (see "Rate limiting").
+- **Sign-up emails** go through Supabase's built-in sender, which allows only a few per hour per project.
+  Configure your own email provider (SMTP) in Supabase before sharing the link widely.
+- **Library versions are pinned** in `backend/requirements.txt` so a rebuild installs exactly what was tested.
+
 ## Run it locally
 
 Prerequisites: Python 3.10+, Node 20+, Docker, a free Gemini API key
@@ -345,7 +381,7 @@ python -m venv ../.venv && ../.venv/Scripts/pip install -r requirements-dev.txt
 cp ../.env.example .env                      # then fill in GEMINI_API_KEY and the Supabase values
 python -m app.ingest                         # chunk, embed and store the knowledge base
 uvicorn app.main:app --reload                # API on :8000
-python -m pytest                             # 116 offline tests (+14 optional DB integration tests)
+python -m pytest                             # 125 offline tests (+14 optional DB integration tests)
 python -m app.ingest --reset                 # clean state: only kb/ (required before the evaluation)
 python eval/run_eval.py                      # live evaluation (refuses to run if extra documents exist)
 ```
@@ -379,6 +415,6 @@ frontend/           Next.js: landing page, chat, evaluation page, admin (documen
 - Text-layer PDFs only; no OCR for scanned documents. Page-based chunking can split a fact across pages.
 - Free-tier Supabase projects pause after a week of inactivity.
 - Sessions use Supabase's default browser storage; there are two roles (customer, and administrator by allowlist), no finer permissions.
-- [ ] Deploy (Vercel + Render + Supabase Postgres with pgvector)
+- [ ] Deploy (Vercel + Render + Supabase Postgres with pgvector): configuration is ready, see Deployment
 - [ ] Tool calling with human confirmation before any action (for example, look up an invoice's status)
 - [ ] Evaluate on questions written by someone other than the author

@@ -1,9 +1,13 @@
-fastapi>=0.115
-uvicorn[standard]>=0.30
-pydantic-settings>=2.4
-psycopg[binary,pool]>=3.2
-pgvector>=0.3
-numpy>=1.26
-httpx>=0.27
-pypdf>=5.0
-python-multipart>=0.0.9
+# Exact versions that the tests and the evaluation were run with. Pinned on purpose: with open-ended
+# ranges the hosting platform would install whatever is newest on the day it builds, which can break a
+# working app without any change to our code. Upgrade deliberately, then re-run the tests.
+fastapi==0.142.2
+uvicorn[standard]==0.54.0
+pydantic-settings==2.15.0
+psycopg[binary,pool]==3.3.6
+psycopg-pool==3.3.3
+pgvector==0.5.0
+numpy==2.2.6
+httpx==0.28.1
+pypdf==6.19.0
+python-multipart==0.0.32

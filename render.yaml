@@ -1,0 +1,29 @@
+# Render "Blueprint": describes the backend service so it can be created in a few clicks.
+# Secrets are NOT in this file. Render asks for each one (sync: false) when the Blueprint is created.
+services:
+  - type: web
+    name: answertrail-api
+    runtime: python
+    region: singapore          # closest Render region to the Supabase database (Sydney) and to Pakistan
+    plan: free                 # sleeps after 15 minutes idle; the first request afterwards takes about a minute
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit  # every push to the main branch redeploys
+    envVars:
+      - key: DATABASE_URL        # Supabase "Session pooler" connection string
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY   # the public (anon) key only; the service-role key is never needed
+        sync: false
+      - key: ADMIN_EMAILS
+        sync: false
+      - key: CORS_ORIGINS        # the frontend's address, e.g. https://answertrail.vercel.app
+        sync: false
+      - key: TRUSTED_PROXY_HOPS  # verify after deploying with /api/admin/client-info (see README)
+        value: "1"
+      - key: HYBRID_SEARCH
+        value: "false"

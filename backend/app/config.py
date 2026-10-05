@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     rate_limit_per_client_per_day: int = 150   # per client (IP), per UTC day
     rate_limit_global_per_day: int = 500       # everyone together, per UTC day: the cost backstop
     rate_limit_max_clients: int = 5000         # how many clients we remember (bounds memory)
+    # How many trusted proxies sit in front of the server (0 locally). Needed so rate limits apply per
+    # visitor instead of to the hosting platform's proxy; see app/clientip.py.
+    trusted_proxy_hops: int = 0
 
     # --- document upload (admin) ---
     max_upload_mb: int = 10
